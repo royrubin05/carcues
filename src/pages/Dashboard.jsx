@@ -87,11 +87,11 @@ export default function Dashboard() {
                     </div>
                     <span className="action-arrow">→</span>
                 </Link>
-                <Link to={`/u/${user.username}`} className="action-card action-showcase" id="quick-showcase">
+                <Link to="/explore" className="action-card action-showcase" id="quick-showcase">
                     <span className="action-icon">🌟</span>
                     <div>
-                        <h3>My Showcase</h3>
-                        <p>Show off top finds & featured cars</p>
+                        <h3>Showcase</h3>
+                        <p>Browse collections & share yours</p>
                     </div>
                     <span className="action-arrow">→</span>
                 </Link>

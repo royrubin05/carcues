@@ -16,6 +16,7 @@ import HowItWorksPage from './pages/HowItWorksPage';
 import ProfilePage from './pages/ProfilePage';
 import PublicSpotPage from './pages/PublicSpotPage';
 import ShowcasePage from './pages/ShowcasePage';
+import ExplorePage from './pages/ExplorePage';
 import SpotOfTheDayPage from './pages/SpotOfTheDayPage';
 
 export default function App() {
@@ -44,6 +45,7 @@ export default function App() {
                         <Route path="/leaderboard" element={<LeaderboardPage />} />
                         <Route path="/how-it-works" element={<HowItWorksPage />} />
                         <Route path="/profile" element={<ProfilePage />} />
+                        <Route path="/explore" element={<ExplorePage />} />
                         <Route path="/admin" element={<AdminPage />} />
                     </Route>
                     <Route path="*" element={<Navigate to="/" replace />} />

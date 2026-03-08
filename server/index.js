@@ -612,6 +612,66 @@ app.get('/api/public/spot/:id', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch spot' });
     }
 });
+// Public users list / search
+app.get('/api/public/users', async (req, res) => {
+    try {
+        const q = req.query.q || '';
+        let users;
+        if (q) {
+            users = await sql`
+                SELECT u.id, u.username, u.avatar, u.joined_at,
+                    COUNT(s.id) as spot_count,
+                    COALESCE(SUM(s.car_rarity), 0) as total_rarity
+                FROM users u
+                LEFT JOIN spots s ON s.user_id = u.id
+                WHERE u.role != 'admin' AND LOWER(u.username) LIKE LOWER(${`%${q}%`})
+                GROUP BY u.id
+                ORDER BY total_rarity DESC
+            `;
+        } else {
+            users = await sql`
+                SELECT u.id, u.username, u.avatar, u.joined_at,
+                    COUNT(s.id) as spot_count,
+                    COALESCE(SUM(s.car_rarity), 0) as total_rarity
+                FROM users u
+                LEFT JOIN spots s ON s.user_id = u.id
+                WHERE u.role != 'admin'
+                GROUP BY u.id
+                ORDER BY total_rarity DESC
+            `;
+        }
+
+        // Get top starred car for each user
+        const userIds = users.map(u => u.id);
+        let starredMap = {};
+        if (userIds.length > 0) {
+            const starredSpots = await sql`
+                SELECT DISTINCT ON (user_id) user_id, car_make, car_model, car_rarity, car_image
+                FROM spots
+                WHERE user_id = ANY(${userIds}) AND starred = true
+                ORDER BY user_id, car_rarity DESC
+            `;
+            starredSpots.forEach(s => {
+                starredMap[s.user_id] = { make: s.car_make, model: s.car_model, rarity: s.car_rarity, image: s.car_image };
+            });
+        }
+
+        res.json({
+            users: users.map(u => ({
+                username: u.username,
+                avatar: u.avatar,
+                joinedAt: u.joined_at,
+                spotCount: parseInt(u.spot_count),
+                totalRarity: Math.round(parseFloat(u.total_rarity)),
+                level: Math.floor(parseFloat(u.total_rarity) / 200) + 1,
+                topStarred: starredMap[u.id] || null,
+            })),
+        });
+    } catch (err) {
+        console.error('Public users error:', err);
+        res.status(500).json({ error: 'Failed to fetch users' });
+    }
+});
 
 // Public profile (showcase)
 app.get('/api/public/profile/:username', async (req, res) => {
