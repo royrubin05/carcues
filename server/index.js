@@ -80,8 +80,8 @@ app.post('/api/auth/register', async (req, res) => {
         // Generate verification token & send email
         const verifyToken = crypto.randomBytes(32).toString('hex');
         await sql`INSERT INTO email_verification_tokens (user_id, token) VALUES (${user.id}, ${verifyToken})`;
-        const baseUrl = `${req.protocol}://${req.get('host')}`;
-        sendVerificationEmail(user.email, user.username, verifyToken, baseUrl).catch(() => { });
+        const baseUrl = 'https://www.carcues.com';
+        sendVerificationEmail(user.email, user.username, verifyToken, baseUrl).catch(err => console.error('❌ Verification email failed:', err));
 
         // Notify admin of new registration (fire-and-forget)
         sendNewUserNotification(user).catch(() => { });
@@ -181,7 +181,7 @@ app.post('/api/auth/resend-verification', requireAuth, async (req, res) => {
         const verifyToken = crypto.randomBytes(32).toString('hex');
         await sql`INSERT INTO email_verification_tokens (user_id, token) VALUES (${user.id}, ${verifyToken})`;
 
-        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        const baseUrl = 'https://www.carcues.com';
         await sendVerificationEmail(user.email, user.username, verifyToken, baseUrl);
 
         res.json({ success: true, message: 'Verification email sent!' });

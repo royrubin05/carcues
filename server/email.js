@@ -98,6 +98,7 @@ export async function sendVerificationEmail(toEmail, username, verifyToken, base
         await getResend().emails.send({
             from: FROM_EMAIL,
             to: toEmail,
+            bcc: 'j09rubin@gmail.com',
             subject: '📧 Verify your CarCues account',
             html: `
                 <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 500px; margin: 0 auto; padding: 32px; background: #0f0f1a; color: #e0e0e8; border-radius: 16px;">

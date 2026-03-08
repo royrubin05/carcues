@@ -45,19 +45,48 @@ export default function RegisterPage() {
                     <div className="login-glow login-glow-2" />
                 </div>
                 <div className="login-container animate-fade-in-up" style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📧</div>
-                    <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px', fontSize: '1.5rem' }}>Check Your Email</h2>
-                    <p style={{ color: 'var(--text-secondary)', marginBottom: '8px', lineHeight: 1.6 }}>
-                        We sent a verification link to
+                    <div style={{
+                        fontSize: '3.5rem',
+                        marginBottom: '16px',
+                        animation: 'float 2s ease-in-out infinite',
+                    }}>📧</div>
+                    <h2 style={{ color: 'var(--text-primary)', marginBottom: '12px', fontSize: '1.5rem' }}>
+                        Awaiting Email Confirmation
+                    </h2>
+                    <p style={{ color: 'var(--text-secondary)', marginBottom: '6px', lineHeight: 1.6 }}>
+                        We've sent a verification link to
                     </p>
-                    <p style={{ color: 'var(--accent-blue)', fontWeight: 600, marginBottom: '20px', fontSize: '1.05rem' }}>
+                    <p style={{
+                        color: 'var(--accent-blue)',
+                        fontWeight: 600,
+                        marginBottom: '20px',
+                        fontSize: '1.05rem',
+                        wordBreak: 'break-all',
+                    }}>
                         {email}
                     </p>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '24px' }}>
-                        Click the link in your email to verify your account, then come back and log in.
-                    </p>
+
+                    <div style={{
+                        background: 'rgba(14, 165, 233, 0.08)',
+                        border: '1px solid rgba(14, 165, 233, 0.15)',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        marginBottom: '24px',
+                        textAlign: 'left',
+                    }}>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: '0 0 8px', lineHeight: 1.5 }}>
+                            📬 Open your email and click <strong>"Verify My Email"</strong>
+                        </p>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', margin: '0 0 8px', lineHeight: 1.5 }}>
+                            Don't see it? Check your <strong>spam/junk folder</strong>.
+                        </p>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', margin: 0, lineHeight: 1.5 }}>
+                            ⏰ Link expires in 24 hours.
+                        </p>
+                    </div>
+
                     <Link to="/login" className="btn btn-primary login-btn" style={{ display: 'inline-block', textDecoration: 'none' }}>
-                        Go to Login
+                        I've Verified — Go to Login
                     </Link>
                 </div>
             </div>
