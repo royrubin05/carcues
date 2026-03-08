@@ -12,8 +12,20 @@ export default function Navbar() {
     };
 
     // Admin users see management-only navigation
-    // Regular users see the full car spotting experience
     const navItems = isAdmin
+        ? [
+            { to: '/admin', icon: '👑', label: 'Admin' },
+        ]
+        : [
+            { to: '/', icon: '🏠', label: 'Home' },
+            { to: '/collection', icon: '🏆', label: 'Collection' },
+            { to: '/upload', icon: '📸', label: 'Spot', isCenter: true },
+            { to: '/leaderboard', icon: '🥇', label: 'Ranks' },
+            { to: '/profile', icon: null, label: 'Profile', isProfile: true },
+        ];
+
+    // Desktop sidebar gets all links
+    const sidebarItems = isAdmin
         ? [
             { to: '/admin', icon: '👑', label: 'Dashboard' },
         ]
@@ -21,7 +33,6 @@ export default function Navbar() {
             { to: '/', icon: '🏠', label: 'Dashboard' },
             { to: '/upload', icon: '📸', label: 'Spot a Car' },
             { to: '/collection', icon: '🏆', label: 'Collection' },
-            // { to: '/map', icon: '🗺️', label: 'Map View' },
             { to: '/wishlist', icon: '⭐', label: 'Wishlist' },
             { to: '/leaderboard', icon: '🥇', label: 'Leaderboard' },
             { to: '/how-it-works', icon: '📖', label: 'How It Works' },
@@ -35,8 +46,34 @@ export default function Navbar() {
                 </div>
             </div>
 
-            <div className="navbar-links">
+            {/* Mobile: 5-tab bar */}
+            <div className="navbar-links navbar-mobile">
                 {navItems.map(item => (
+                    <NavLink
+                        key={item.to}
+                        to={item.to}
+                        className={({ isActive }) =>
+                            `nav-link ${isActive ? 'active' : ''} ${item.isCenter ? 'nav-center' : ''} ${item.isProfile ? 'nav-profile' : ''}`
+                        }
+                        end={item.to === '/'}
+                    >
+                        {item.isCenter ? (
+                            <span className="nav-center-ring">
+                                <span className="nav-icon">{item.icon}</span>
+                            </span>
+                        ) : item.isProfile ? (
+                            <span className="nav-avatar-mini">{user?.avatar || '👤'}</span>
+                        ) : (
+                            <span className="nav-icon">{item.icon}</span>
+                        )}
+                        <span className="nav-label">{item.label}</span>
+                    </NavLink>
+                ))}
+            </div>
+
+            {/* Desktop: Full sidebar links */}
+            <div className="navbar-links navbar-desktop">
+                {sidebarItems.map(item => (
                     <NavLink
                         key={item.to}
                         to={item.to}

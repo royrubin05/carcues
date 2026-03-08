@@ -1,3 +1,8 @@
+/* ═══════════════════════════════════════════
+   Navbar — Best-in-class mobile-first nav
+   5-tab bottom bar with elevated center action
+   ═══════════════════════════════════════════ */
+
 .navbar {
     position: fixed;
     left: 0;
@@ -5,64 +10,35 @@
     bottom: 0;
     top: auto;
     width: 100%;
-    height: auto;
     background: var(--bg-secondary);
     border-top: 1px solid var(--border-subtle);
     display: flex;
     flex-direction: row;
     padding: 0;
     z-index: 100;
-    transition: width var(--transition-slow);
 }
 
+/* Hide brand + user on mobile */
 .navbar-brand,
 .navbar-user {
     display: none;
 }
 
-.navbar-brand {
-    padding: var(--space-md) var(--space-sm);
-    margin-bottom: var(--space-xl);
+/* Hide desktop nav on mobile */
+.navbar-desktop {
+    display: none;
 }
 
-.navbar-logo {
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-}
-
-.logo-image {
-    height: 160px;
-    width: auto;
-    object-fit: contain;
-}
-
-
-.logo-text {
-    font-size: var(--font-xl);
-    font-weight: 800;
-    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-orange) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.navbar-links {
+/* ── Mobile: 5-tab bottom bar ── */
+.navbar-mobile {
     flex: 1;
     display: flex;
     flex-direction: row;
-    align-items: stretch;
+    align-items: flex-end;
+    justify-content: space-around;
     width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    gap: 0;
-    padding: 4px 0;
-}
-
-.navbar-links::-webkit-scrollbar {
-    display: none;
+    padding: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 .nav-link {
@@ -71,78 +47,119 @@
     align-items: center;
     justify-content: center;
     gap: 2px;
-    padding: 6px 0;
-    min-width: 60px;
+    padding: 8px 0 6px;
     flex: 1;
-    border-radius: 0;
-    color: var(--text-secondary);
+    color: var(--text-muted);
     font-weight: 500;
     font-size: 9px;
-    transition: all var(--transition-normal);
+    transition: color 0.2s;
     text-decoration: none;
     position: relative;
-    overflow: hidden;
     -webkit-tap-highlight-color: transparent;
+    border: none;
+    background: none;
 }
 
 .nav-link::before {
     display: none;
 }
 
-.nav-link:hover {
+.nav-link:hover,
+.nav-link:active {
     color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.04);
 }
 
 .nav-link.active {
     color: var(--accent-blue);
-    background: var(--accent-blue-dim);
+}
+
+/* Active indicator dot */
+.nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    background: var(--accent-blue);
+    border-radius: 50%;
 }
 
 .nav-icon {
-    font-size: 1.2rem;
-    width: 24px;
-    text-align: center;
+    font-size: 1.3rem;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     line-height: 1;
 }
 
 .nav-label {
-    font-size: 9px;
+    font-size: 10px;
+    font-weight: 600;
     white-space: nowrap;
     line-height: 1;
+    letter-spacing: 0.2px;
 }
 
-.navbar-user {
-    border-top: 1px solid var(--border-subtle);
-    padding-top: var(--space-lg);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-sm);
+/* ── Center "Spot" button — elevated ring ── */
+.nav-link.nav-center {
+    position: relative;
+    bottom: 10px;
+    padding: 0 0 6px;
 }
 
-.user-info {
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-    padding: var(--space-sm) var(--space-sm);
+.nav-link.nav-center::after {
+    display: none;
+    /* no dot for center */
 }
 
-.user-avatar {
-    font-size: 1.5rem;
-    width: 36px;
-    height: 36px;
+.nav-center-ring {
+    width: 52px;
+    height: 52px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--bg-card);
-    border-radius: var(--radius-full);
-    border: 2px solid var(--border-subtle);
+    background: linear-gradient(135deg, var(--accent-blue), #0284c7);
+    border-radius: 50%;
+    box-shadow: 0 4px 16px rgba(14, 165, 233, 0.35);
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.user-name {
-    font-weight: 600;
-    font-size: var(--font-sm);
-    color: var(--text-primary);
+.nav-link.nav-center:active .nav-center-ring {
+    transform: scale(0.92);
+}
+
+.nav-center-ring .nav-icon {
+    font-size: 1.5rem;
+    color: white;
+    filter: brightness(1.2);
+}
+
+.nav-link.nav-center .nav-label {
+    margin-top: 4px;
+    color: var(--accent-blue);
+    font-weight: 700;
+}
+
+/* ── Profile avatar in nav ── */
+.nav-avatar-mini {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    background: var(--bg-tertiary);
+    border-radius: 50%;
+    border: 2px solid var(--border-subtle);
+    transition: border-color 0.2s;
+}
+
+.nav-link.active .nav-avatar-mini {
+    border-color: var(--accent-blue);
 }
 
 /* ═══════ Desktop Sidebar ═══════ */
@@ -161,28 +178,40 @@
         border-top: none;
     }
 
+    /* Show brand + user on desktop */
     .navbar-brand,
     .navbar-user {
         display: flex;
     }
 
-    .navbar-links {
+    /* Hide mobile, show desktop */
+    .navbar-mobile {
+        display: none;
+    }
+
+    .navbar-desktop {
+        display: flex;
+        flex: 1;
         flex-direction: column;
         justify-content: flex-start;
         align-items: stretch;
-        width: auto;
-        overflow-x: visible;
-        padding: 0;
+        gap: 0;
     }
 
+    /* Reset desktop nav-link */
     .nav-link {
         flex-direction: row;
         gap: var(--space-md);
         padding: 12px 16px;
         font-size: var(--font-sm);
-        min-width: auto;
         flex: initial;
         border-radius: var(--radius-md);
+        justify-content: flex-start;
+    }
+
+    .nav-link.active::after {
+        display: none;
+        /* no dot on desktop */
     }
 
     .nav-link::before {
@@ -210,5 +239,65 @@
 
     .nav-label {
         font-size: var(--font-sm);
+    }
+
+    /* Brand */
+    .navbar-brand {
+        padding: var(--space-md) var(--space-sm);
+        margin-bottom: var(--space-xl);
+    }
+
+    .navbar-logo {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+    }
+
+    .logo-image {
+        height: 160px;
+        width: auto;
+        object-fit: contain;
+    }
+
+    .logo-text {
+        font-size: var(--font-xl);
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-orange) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* User section */
+    .navbar-user {
+        border-top: 1px solid var(--border-subtle);
+        padding-top: var(--space-lg);
+        flex-direction: column;
+        gap: var(--space-sm);
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        padding: var(--space-sm) var(--space-sm);
+    }
+
+    .user-avatar {
+        font-size: 1.5rem;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-card);
+        border-radius: var(--radius-full);
+        border: 2px solid var(--border-subtle);
+    }
+
+    .user-name {
+        font-weight: 600;
+        font-size: var(--font-sm);
+        color: var(--text-primary);
     }
 }

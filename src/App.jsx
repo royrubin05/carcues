@@ -13,6 +13,7 @@ import WishlistPage from './pages/WishlistPage';
 import LeaderboardPage from './pages/LeaderboardPage';
 import AdminPage from './pages/AdminPage';
 import HowItWorksPage from './pages/HowItWorksPage';
+import ProfilePage from './pages/ProfilePage';
 import PublicSpotPage from './pages/PublicSpotPage';
 import ShowcasePage from './pages/ShowcasePage';
 import SpotOfTheDayPage from './pages/SpotOfTheDayPage';
@@ -42,6 +43,7 @@ export default function App() {
                         <Route path="/wishlist" element={<WishlistPage />} />
                         <Route path="/leaderboard" element={<LeaderboardPage />} />
                         <Route path="/how-it-works" element={<HowItWorksPage />} />
+                        <Route path="/profile" element={<ProfilePage />} />
                         <Route path="/admin" element={<AdminPage />} />
                     </Route>
                     <Route path="*" element={<Navigate to="/" replace />} />
