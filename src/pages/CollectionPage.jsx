@@ -4,6 +4,7 @@ import { getUserSpots, removeSpot } from '../services/carService';
 import { getEstimatedMSRP } from '../services/vehicleDataService';
 import CarCard from '../components/CarCard';
 import RarityBadge from '../components/RarityBadge';
+import ShareButton from '../components/ShareButton';
 import './CollectionPage.css';
 
 export default function CollectionPage() {
@@ -185,14 +186,19 @@ export default function CollectionPage() {
                             <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-sm)' }}>
                                 Spotted {new Date(selectedSpot.spottedAt).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                             </p>
-                            <button
-                                className="btn btn-danger btn-sm"
-                                onClick={() => handleDelete(selectedSpot.id)}
-                                style={{ marginTop: '16px' }}
-                                id="delete-spot-btn"
-                            >
-                                🗑️ Remove from Collection
-                            </button>
+                            <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+                                <ShareButton
+                                    url={`${window.location.origin}/spot/${selectedSpot.id}`}
+                                    text={`Check out this ${selectedSpot.car.make} ${selectedSpot.car.model} I spotted on CarCues!`}
+                                />
+                                <button
+                                    className="btn btn-danger btn-sm"
+                                    onClick={() => handleDelete(selectedSpot.id)}
+                                    id="delete-spot-btn"
+                                >
+                                    🗑️ Remove
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

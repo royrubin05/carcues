@@ -21,7 +21,7 @@ export default function Navbar() {
             { to: '/', icon: '🏠', label: 'Dashboard' },
             { to: '/upload', icon: '📸', label: 'Spot a Car' },
             { to: '/collection', icon: '🏆', label: 'Collection' },
-            { to: '/map', icon: '🗺️', label: 'Map View' },
+            // { to: '/map', icon: '🗺️', label: 'Map View' },
             { to: '/wishlist', icon: '⭐', label: 'Wishlist' },
             { to: '/leaderboard', icon: '🥇', label: 'Leaderboard' },
             { to: '/how-it-works', icon: '📖', label: 'How It Works' },

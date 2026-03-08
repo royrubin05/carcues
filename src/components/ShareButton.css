@@ -1,0 +1,26 @@
+.share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--bg-tertiary, #2a2a3d);
+    border: 1px solid var(--border, #3a3a5c);
+    border-radius: 8px;
+    color: var(--text-secondary, #a0a0b0);
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+
+.share-btn:hover {
+    background: var(--accent-blue, #0ea5e9);
+    color: white;
+    border-color: var(--accent-blue, #0ea5e9);
+}
+
+.share-btn.copied {
+    background: var(--accent-green, #22c55e);
+    color: white;
+    border-color: var(--accent-green, #22c55e);
+}

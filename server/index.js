@@ -479,6 +479,91 @@ app.get('/api/admin/stats', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // ══════════════════════════════════════════════
+// PUBLIC ROUTES (no auth — for sharing)
+// ══════════════════════════════════════════════
+
+// Public spot page
+app.get('/api/public/spot/:id', async (req, res) => {
+    try {
+        const [spot] = await sql`
+            SELECT s.*, u.username, u.avatar
+            FROM spots s JOIN users u ON s.user_id = u.id
+            WHERE s.id = ${req.params.id}
+        `;
+        if (!spot) return res.status(404).json({ error: 'Spot not found' });
+        res.json({
+            spot: {
+                ...formatSpot(spot),
+                spotter: { username: spot.username, avatar: spot.avatar },
+            },
+        });
+    } catch (err) {
+        console.error('Public spot error:', err);
+        res.status(500).json({ error: 'Failed to fetch spot' });
+    }
+});
+
+// Public profile
+app.get('/api/public/profile/:username', async (req, res) => {
+    try {
+        const [user] = await sql`
+            SELECT id, username, avatar, joined_at FROM users WHERE LOWER(username) = LOWER(${req.params.username})
+        `;
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const spots = await sql`SELECT * FROM spots WHERE user_id = ${user.id} ORDER BY car_rarity DESC LIMIT 6`;
+        const [countRow] = await sql`SELECT COUNT(*) as total FROM spots WHERE user_id = ${user.id}`;
+        const [rarityRow] = await sql`SELECT COALESCE(SUM(car_rarity), 0) as total FROM spots WHERE user_id = ${user.id}`;
+
+        res.json({
+            profile: {
+                username: user.username,
+                avatar: user.avatar,
+                joinedAt: user.joined_at,
+                totalSpots: parseInt(countRow.total),
+                totalRarityPoints: Math.round(parseFloat(rarityRow.total)),
+                level: Math.floor(parseFloat(rarityRow.total) / 200) + 1,
+                topSpots: spots.map(formatSpot),
+            },
+        });
+    } catch (err) {
+        console.error('Public profile error:', err);
+        res.status(500).json({ error: 'Failed to fetch profile' });
+    }
+});
+
+// Spot of the Day
+app.get('/api/public/spot-of-the-day', async (req, res) => {
+    try {
+        // Try today's highest rarity spot
+        let [spot] = await sql`
+            SELECT s.*, u.username, u.avatar
+            FROM spots s JOIN users u ON s.user_id = u.id
+            WHERE s.spotted_at >= CURRENT_DATE
+            ORDER BY s.car_rarity DESC LIMIT 1
+        `;
+        // Fallback: most recent high-rarity spot ever
+        if (!spot) {
+            [spot] = await sql`
+                SELECT s.*, u.username, u.avatar
+                FROM spots s JOIN users u ON s.user_id = u.id
+                ORDER BY s.car_rarity DESC LIMIT 1
+            `;
+        }
+        if (!spot) return res.json({ spotOfTheDay: null });
+        res.json({
+            spotOfTheDay: {
+                ...formatSpot(spot),
+                spotter: { username: spot.username, avatar: spot.avatar },
+            },
+        });
+    } catch (err) {
+        console.error('Spot of the day error:', err);
+        res.status(500).json({ error: 'Failed to fetch spot of the day' });
+    }
+});
+
+// ══════════════════════════════════════════════
 // Start server
 // ══════════════════════════════════════════════
 

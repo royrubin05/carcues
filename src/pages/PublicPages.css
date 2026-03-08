@@ -1,0 +1,304 @@
+/* ═══════════════════════════════════════════
+   Public Pages — Shared styling for spot/profile/SOTD
+   ═══════════════════════════════════════════ */
+
+.public-page {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    padding: 0;
+}
+
+.public-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+}
+
+.public-nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--text-primary);
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.public-nav-logo img {
+    height: 32px;
+    border-radius: 6px;
+}
+
+.public-nav-cta {
+    background: var(--accent-blue);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.public-nav-cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
+}
+
+/* Spot Card */
+.public-spot-hero {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.public-spot-card {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.public-spot-image {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    display: block;
+}
+
+.public-spot-info {
+    padding: 20px 24px;
+}
+
+.public-spot-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 4px;
+}
+
+.public-spot-meta {
+    display: flex;
+    gap: 12px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.public-spot-rarity {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.public-spot-spotter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.public-spot-spotter .avatar {
+    font-size: 1.3rem;
+}
+
+.public-spot-watermark {
+    text-align: center;
+    padding: 12px;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}
+
+/* Profile Page */
+.public-profile-hero {
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.public-profile-header {
+    text-align: center;
+    padding: 32px 24px;
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    margin-bottom: 24px;
+}
+
+.public-profile-avatar {
+    font-size: 3.5rem;
+    margin-bottom: 12px;
+}
+
+.public-profile-name {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin: 0 0 4px;
+}
+
+.public-profile-joined {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.public-profile-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.public-profile-stat {
+    text-align: center;
+}
+
+.public-profile-stat-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--accent-blue);
+}
+
+.public-profile-stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.public-profile-spots {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+}
+
+.public-profile-spot-card {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    transition: transform 0.2s;
+}
+
+.public-profile-spot-card:hover {
+    transform: translateY(-2px);
+}
+
+.public-profile-spot-img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    display: block;
+}
+
+.public-profile-spot-info {
+    padding: 12px;
+}
+
+.public-profile-spot-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+}
+
+.public-profile-spot-rarity {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+/* Spot of the Day */
+.sotd-hero {
+    max-width: 650px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.sotd-badge {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.sotd-badge-text {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--accent-gold), var(--accent-orange));
+    color: #000;
+    padding: 8px 24px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+/* Share Button */
+.share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+.share-btn:hover {
+    background: var(--accent-blue);
+    color: white;
+    border-color: var(--accent-blue);
+}
+
+.share-btn.copied {
+    background: var(--accent-green);
+    color: white;
+    border-color: var(--accent-green);
+}
+
+/* Loading */
+.public-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    color: var(--text-secondary);
+}
+
+/* Not Found */
+.public-not-found {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-secondary);
+}
+
+.public-not-found h2 {
+    font-size: 1.4rem;
+    margin-bottom: 8px;
+}
+
+@media (max-width: 600px) {
+
+    .public-spot-hero,
+    .public-profile-hero,
+    .sotd-hero {
+        margin: 20px auto;
+        padding: 0 12px;
+    }
+
+    .public-profile-spots {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
