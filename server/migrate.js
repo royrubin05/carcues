@@ -102,6 +102,23 @@ async function migrate() {
     await sql`ALTER TABLE spots ADD COLUMN IF NOT EXISTS starred BOOLEAN DEFAULT false`;
     console.log('✅ starred column ready');
 
+    // ── Email verification ──
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT false`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified_at TIMESTAMPTZ`;
+    console.log('✅ email_verified columns ready');
+
+    await sql`
+        CREATE TABLE IF NOT EXISTS email_verification_tokens (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+            token VARCHAR(64) UNIQUE NOT NULL,
+            created_at TIMESTAMPTZ DEFAULT NOW(),
+            expires_at TIMESTAMPTZ DEFAULT (NOW() + INTERVAL '24 hours'),
+            used BOOLEAN DEFAULT false
+        )
+    `;
+    console.log('✅ email_verification_tokens table ready');
+
     console.log('\n🎉 Migration complete! Tables are ready.');
 }
 

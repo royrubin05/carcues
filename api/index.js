@@ -35,7 +35,7 @@ async function requireAuth(req, res, next) {
     if (!token) return res.status(401).json({ error: 'No token provided' });
 
     const sessions = await sql`
-        SELECT s.*, u.id as user_id, u.username, u.email, u.role, u.avatar, u.joined_at
+        SELECT s.*, u.id as user_id, u.username, u.email, u.role, u.avatar, u.joined_at, u.email_verified
         FROM sessions s
         JOIN users u ON s.user_id = u.id
         WHERE s.id = ${token} AND s.expires_at > NOW()
@@ -85,12 +85,23 @@ app.post('/api/auth/register', async (req, res) => {
         const avatar = avatars[Math.floor(Math.random() * avatars.length)];
 
         const [user] = await sql`
-            INSERT INTO users (username, email, role, avatar, password_hash)
-            VALUES (${username}, ${email}, 'user', ${avatar}, ${simpleHash(password)})
-            RETURNING id, username, email, role, avatar, joined_at
+            INSERT INTO users (username, email, role, avatar, password_hash, email_verified)
+            VALUES (${username}, ${email}, 'user', ${avatar}, ${simpleHash(password)}, false)
+            RETURNING id, username, email, role, avatar, joined_at, email_verified
         `;
         const token = generateToken();
         await sql`INSERT INTO sessions (id, user_id) VALUES (${token}, ${user.id})`;
+
+        // Generate verification token & send email (fire-and-forget)
+        const verifyToken = crypto.randomBytes(32).toString('hex');
+        await sql`INSERT INTO email_verification_tokens (user_id, token) VALUES (${user.id}, ${verifyToken})`;
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        resend.emails.send({
+            from: FROM_EMAIL, to: user.email,
+            subject: '\uD83D\uDCE7 Verify your CarCues account',
+            html: `<div style="font-family:-apple-system,sans-serif;max-width:500px;margin:0 auto;padding:32px;background:#0f0f1a;color:#e0e0e8;border-radius:16px;"><div style="text-align:center;margin-bottom:24px;"><h1 style="color:#0ea5e9;font-size:24px;margin:0;">CarCues</h1><p style="color:#888;margin:4px 0 0;">Verify Your Email</p></div><p>Hey ${user.username}! \uD83D\uDC4B</p><p>Welcome to CarCues! Click the button below to verify your email:</p><div style="text-align:center;margin:28px 0;"><a href="${baseUrl}/verify-email?token=${verifyToken}" style="background:#0ea5e9;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:16px;display:inline-block;">Verify My Email</a></div><p style="color:#888;font-size:13px;">This link expires in 24 hours.</p><hr style="border:none;border-top:1px solid #2a2a3d;margin:24px 0;"/><p style="color:#666;font-size:12px;text-align:center;">CarCues \u2014 Spot Rare Cars</p></div>`
+        }).catch(() => { });
+
         // Notify admin of new registration (fire-and-forget)
         const adminEmail = process.env.ADMIN_EMAIL;
         if (adminEmail) {
@@ -108,7 +119,7 @@ app.post('/api/auth/login', async (req, res) => {
     try {
         const { username, password } = req.body;
         if (!username || !password) return res.status(400).json({ error: 'Username and password are required' });
-        const users = await sql`SELECT id, username, email, role, avatar, password_hash, joined_at FROM users WHERE username = ${username}`;
+        const users = await sql`SELECT id, username, email, role, avatar, password_hash, joined_at, email_verified FROM users WHERE username = ${username}`;
         if (users.length === 0) return res.status(401).json({ error: 'No account found with that username' });
         const user = users[0];
         if (user.password_hash !== simpleHash(password)) return res.status(401).json({ error: 'Incorrect password' });
@@ -117,6 +128,46 @@ app.post('/api/auth/login', async (req, res) => {
         const { password_hash, ...safeUser } = user;
         res.json({ success: true, user: safeUser, token });
     } catch (err) { console.error('Login error:', err); res.status(500).json({ error: 'Login failed' }); }
+});
+
+// ── Email verification ──
+app.get('/api/auth/verify-email', async (req, res) => {
+    try {
+        const { token } = req.query;
+        if (!token) return res.status(400).json({ error: 'Token is required' });
+        const tokens = await sql`SELECT * FROM email_verification_tokens WHERE token = ${token}`;
+        if (tokens.length === 0) return res.status(400).json({ error: 'Invalid verification link' });
+        const record = tokens[0];
+        if (record.used) return res.json({ success: true, message: 'Email already verified' });
+        if (new Date(record.expires_at) < new Date()) {
+            return res.status(400).json({ error: 'Verification link has expired. Please request a new one.' });
+        }
+        await sql`UPDATE users SET email_verified = true, email_verified_at = NOW() WHERE id = ${record.user_id}`;
+        await sql`UPDATE email_verification_tokens SET used = true WHERE id = ${record.id}`;
+        res.json({ success: true, message: 'Email verified successfully!' });
+    } catch (err) { console.error('Verify email error:', err); res.status(500).json({ error: 'Verification failed' }); }
+});
+
+app.post('/api/auth/resend-verification', requireAuth, async (req, res) => {
+    try {
+        const [user] = await sql`SELECT id, email, username, email_verified FROM users WHERE id = ${req.user.id}`;
+        if (user.email_verified) return res.json({ success: true, message: 'Email already verified' });
+        const recent = await sql`SELECT created_at FROM email_verification_tokens WHERE user_id = ${user.id} ORDER BY created_at DESC LIMIT 1`;
+        if (recent.length > 0) {
+            const diff = Date.now() - new Date(recent[0].created_at).getTime();
+            if (diff < 60000) return res.status(429).json({ error: `Please wait ${Math.ceil((60000 - diff) / 1000)} seconds` });
+        }
+        await sql`UPDATE email_verification_tokens SET used = true WHERE user_id = ${user.id} AND used = false`;
+        const verifyToken = crypto.randomBytes(32).toString('hex');
+        await sql`INSERT INTO email_verification_tokens (user_id, token) VALUES (${user.id}, ${verifyToken})`;
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        await resend.emails.send({
+            from: FROM_EMAIL, to: user.email,
+            subject: '\uD83D\uDCE7 Verify your CarCues account',
+            html: `<div style="font-family:-apple-system,sans-serif;max-width:500px;margin:0 auto;padding:32px;background:#0f0f1a;color:#e0e0e8;border-radius:16px;"><div style="text-align:center;margin-bottom:24px;"><h1 style="color:#0ea5e9;font-size:24px;margin:0;">CarCues</h1><p style="color:#888;margin:4px 0 0;">Verify Your Email</p></div><p>Hey ${user.username}! \uD83D\uDC4B</p><p>Click below to verify your email:</p><div style="text-align:center;margin:28px 0;"><a href="${baseUrl}/verify-email?token=${verifyToken}" style="background:#0ea5e9;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:16px;display:inline-block;">Verify My Email</a></div><p style="color:#888;font-size:13px;">This link expires in 24 hours.</p></div>`
+        });
+        res.json({ success: true, message: 'Verification email sent!' });
+    } catch (err) { console.error('Resend verification error:', err); res.status(500).json({ error: 'Failed to resend' }); }
 });
 
 app.post('/api/auth/logout', requireAuth, async (req, res) => {
@@ -197,9 +248,9 @@ app.post('/api/users', requireAuth, requireAdmin, async (req, res) => {
         const userRole = role === 'admin' ? 'admin' : 'user';
 
         const [user] = await sql`
-            INSERT INTO users (username, email, role, avatar, password_hash)
-            VALUES (${username}, ${email}, ${userRole}, ${avatar}, ${simpleHash(password)})
-            RETURNING id, username, email, role, avatar, joined_at
+            INSERT INTO users (username, email, role, avatar, password_hash, email_verified)
+            VALUES (${username}, ${email}, ${userRole}, ${avatar}, ${simpleHash(password)}, true)
+            RETURNING id, username, email, role, avatar, joined_at, email_verified
         `;
         res.json({ success: true, user });
     } catch (err) { console.error('Create user error:', err); res.status(500).json({ error: 'Failed to create user' }); }

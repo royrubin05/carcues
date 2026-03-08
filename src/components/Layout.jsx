@@ -1,9 +1,63 @@
+import { useState } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Navbar from './Navbar';
 
+function VerifyBanner() {
+    const { resendVerification } = useAuth();
+    const [sending, setSending] = useState(false);
+    const [msg, setMsg] = useState('');
+
+    const handleResend = async () => {
+        setSending(true);
+        setMsg('');
+        const result = await resendVerification();
+        setSending(false);
+        if (result.success) {
+            setMsg('✅ Verification email sent! Check your inbox.');
+        } else {
+            setMsg(`❌ ${result.error}`);
+        }
+    };
+
+    return (
+        <div style={{
+            background: 'rgba(14, 165, 233, 0.1)',
+            border: '1px solid rgba(14, 165, 233, 0.2)',
+            borderRadius: '12px',
+            padding: '12px 16px',
+            margin: '8px 16px 0',
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '0.85rem',
+        }}>
+            <span>📧 Please verify your email.</span>
+            <button
+                onClick={handleResend}
+                disabled={sending}
+                style={{
+                    background: 'var(--accent-blue)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '6px 14px',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                    cursor: sending ? 'not-allowed' : 'pointer',
+                    opacity: sending ? 0.6 : 1,
+                }}
+            >
+                {sending ? 'Sending...' : 'Resend Email'}
+            </button>
+            {msg && <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{msg}</span>}
+        </div>
+    );
+}
+
 export default function Layout() {
-    const { user, loading } = useAuth();
+    const { user, loading, isAdmin } = useAuth();
 
     if (loading) {
         return (
@@ -29,6 +83,7 @@ export default function Layout() {
     return (
         <div className="app-layout">
             <Navbar />
+            {!isAdmin && !user.email_verified && <VerifyBanner />}
             <main className="main-content">
                 <Outlet />
             </main>

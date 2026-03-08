@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import crypto from 'crypto';
 import sql from './db.js';
-import { sendPasswordResetEmail, sendNewUserNotification } from './email.js';
+import { sendPasswordResetEmail, sendNewUserNotification, sendVerificationEmail } from './email.js';
 
 const app = express();
 app.use(cors());
@@ -32,7 +32,7 @@ async function requireAuth(req, res, next) {
     if (!token) return res.status(401).json({ error: 'No token provided' });
 
     const sessions = await sql`
-        SELECT s.*, u.id as user_id, u.username, u.email, u.role, u.avatar, u.joined_at
+        SELECT s.*, u.id as user_id, u.username, u.email, u.role, u.avatar, u.joined_at, u.email_verified
         FROM sessions s
         JOIN users u ON s.user_id = u.id
         WHERE s.id = ${token} AND s.expires_at > NOW()
@@ -72,14 +72,20 @@ app.post('/api/auth/register', async (req, res) => {
         const avatar = avatars[Math.floor(Math.random() * avatars.length)];
 
         const [user] = await sql`
-            INSERT INTO users (username, email, role, avatar, password_hash)
-            VALUES (${username}, ${email}, 'user', ${avatar}, ${simpleHash(password)})
-            RETURNING id, username, email, role, avatar, joined_at
+            INSERT INTO users (username, email, role, avatar, password_hash, email_verified)
+            VALUES (${username}, ${email}, 'user', ${avatar}, ${simpleHash(password)}, false)
+            RETURNING id, username, email, role, avatar, joined_at, email_verified
         `;
 
         // Create session
         const token = generateToken();
         await sql`INSERT INTO sessions (id, user_id) VALUES (${token}, ${user.id})`;
+
+        // Generate verification token & send email (fire-and-forget)
+        const verifyToken = crypto.randomBytes(32).toString('hex');
+        await sql`INSERT INTO email_verification_tokens (user_id, token) VALUES (${user.id}, ${verifyToken})`;
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        sendVerificationEmail(user.email, user.username, verifyToken, baseUrl).catch(() => { });
 
         // Notify admin of new registration (fire-and-forget)
         sendNewUserNotification(user).catch(() => { });
@@ -97,7 +103,7 @@ app.post('/api/auth/login', async (req, res) => {
         if (!username || !password) return res.status(400).json({ error: 'Username and password are required' });
 
         const users = await sql`
-            SELECT id, username, email, role, avatar, password_hash, joined_at
+            SELECT id, username, email, role, avatar, password_hash, joined_at, email_verified
             FROM users WHERE username = ${username}
         `;
         if (users.length === 0) return res.status(401).json({ error: 'No account found with that username' });
@@ -116,6 +122,70 @@ app.post('/api/auth/login', async (req, res) => {
     } catch (err) {
         console.error('Login error:', err);
         res.status(500).json({ error: 'Login failed' });
+    }
+});
+
+// ── Email verification ──
+app.get('/api/auth/verify-email', async (req, res) => {
+    try {
+        const { token } = req.query;
+        if (!token) return res.status(400).json({ error: 'Token is required' });
+
+        const tokens = await sql`
+            SELECT * FROM email_verification_tokens
+            WHERE token = ${token}
+        `;
+        if (tokens.length === 0) return res.status(400).json({ error: 'Invalid verification link' });
+
+        const record = tokens[0];
+        if (record.used) return res.json({ success: true, message: 'Email already verified' });
+        if (new Date(record.expires_at) < new Date()) {
+            return res.status(400).json({ error: 'Verification link has expired. Please request a new one.' });
+        }
+
+        await sql`UPDATE users SET email_verified = true, email_verified_at = NOW() WHERE id = ${record.user_id}`;
+        await sql`UPDATE email_verification_tokens SET used = true WHERE id = ${record.id}`;
+
+        res.json({ success: true, message: 'Email verified successfully!' });
+    } catch (err) {
+        console.error('Verify email error:', err);
+        res.status(500).json({ error: 'Verification failed' });
+    }
+});
+
+app.post('/api/auth/resend-verification', requireAuth, async (req, res) => {
+    try {
+        // Check if already verified
+        const [user] = await sql`SELECT id, email, username, email_verified FROM users WHERE id = ${req.user.id}`;
+        if (user.email_verified) return res.json({ success: true, message: 'Email already verified' });
+
+        // Rate limit: 1 per minute
+        const recent = await sql`
+            SELECT created_at FROM email_verification_tokens
+            WHERE user_id = ${user.id} ORDER BY created_at DESC LIMIT 1
+        `;
+        if (recent.length > 0) {
+            const diff = Date.now() - new Date(recent[0].created_at).getTime();
+            if (diff < 60000) {
+                const wait = Math.ceil((60000 - diff) / 1000);
+                return res.status(429).json({ error: `Please wait ${wait} seconds before requesting another email` });
+            }
+        }
+
+        // Invalidate old tokens
+        await sql`UPDATE email_verification_tokens SET used = true WHERE user_id = ${user.id} AND used = false`;
+
+        // Generate new token
+        const verifyToken = crypto.randomBytes(32).toString('hex');
+        await sql`INSERT INTO email_verification_tokens (user_id, token) VALUES (${user.id}, ${verifyToken})`;
+
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        await sendVerificationEmail(user.email, user.username, verifyToken, baseUrl);
+
+        res.json({ success: true, message: 'Verification email sent!' });
+    } catch (err) {
+        console.error('Resend verification error:', err);
+        res.status(500).json({ error: 'Failed to resend verification email' });
     }
 });
 
@@ -236,9 +306,9 @@ app.post('/api/users', requireAuth, requireAdmin, async (req, res) => {
         const userRole = role === 'admin' ? 'admin' : 'user';
 
         const [user] = await sql`
-            INSERT INTO users (username, email, role, avatar, password_hash)
-            VALUES (${username}, ${email}, ${userRole}, ${avatar}, ${simpleHash(password)})
-            RETURNING id, username, email, role, avatar, joined_at
+            INSERT INTO users (username, email, role, avatar, password_hash, email_verified)
+            VALUES (${username}, ${email}, ${userRole}, ${avatar}, ${simpleHash(password)}, true)
+            RETURNING id, username, email, role, avatar, joined_at, email_verified
         `;
         res.json({ success: true, user });
     } catch (err) {

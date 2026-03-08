@@ -18,6 +18,7 @@ import PublicSpotPage from './pages/PublicSpotPage';
 import ShowcasePage from './pages/ShowcasePage';
 import ExplorePage from './pages/ExplorePage';
 import SpotOfTheDayPage from './pages/SpotOfTheDayPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
 
 export default function App() {
     return (
@@ -28,6 +29,7 @@ export default function App() {
                     <Route path="/spot/:id" element={<PublicSpotPage />} />
                     <Route path="/u/:username" element={<ShowcasePage />} />
                     <Route path="/spot-of-the-day" element={<SpotOfTheDayPage />} />
+                    <Route path="/verify-email" element={<VerifyEmailPage />} />
 
                     {/* Auth pages */}
                     <Route path="/login" element={<LoginPage />} />

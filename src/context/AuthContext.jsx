@@ -71,10 +71,25 @@ export function AuthProvider({ children }) {
         }
     };
 
+    /** Resend email verification */
+    const resendVerification = async () => {
+        try {
+            const data = await api('/api/auth/resend-verification', { method: 'POST' });
+            return { success: true, message: data.message };
+        } catch (err) {
+            return { success: false, error: err.message };
+        }
+    };
+
+    /** Mark user as verified (after verify-email page success) */
+    const markVerified = () => {
+        if (user) setUser({ ...user, email_verified: true });
+    };
+
     const isAdmin = user?.role === 'admin';
 
     return (
-        <AuthContext.Provider value={{ user, login, register, logout, isAdmin, loading, resetUserPassword }}>
+        <AuthContext.Provider value={{ user, login, register, logout, isAdmin, loading, resetUserPassword, resendVerification, markVerified }}>
             {children}
         </AuthContext.Provider>
     );
