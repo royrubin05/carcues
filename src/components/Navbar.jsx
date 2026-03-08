@@ -15,6 +15,8 @@ export default function Navbar() {
     const navItems = isAdmin
         ? [
             { to: '/admin', icon: '👑', label: 'Admin' },
+            { to: '/leaderboard', icon: '🥇', label: 'Ranks' },
+            { to: '/explore', icon: '🌟', label: 'Showcase' },
         ]
         : [
             { to: '/', icon: '🏠', label: 'Home' },
@@ -28,6 +30,8 @@ export default function Navbar() {
     const sidebarItems = isAdmin
         ? [
             { to: '/admin', icon: '👑', label: 'Dashboard' },
+            { to: '/leaderboard', icon: '🥇', label: 'Leaderboard' },
+            { to: '/explore', icon: '🌟', label: 'Showcase' },
         ]
         : [
             { to: '/', icon: '🏠', label: 'Dashboard' },
