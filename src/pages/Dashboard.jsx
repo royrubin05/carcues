@@ -87,14 +87,7 @@ export default function Dashboard() {
                     </div>
                     <span className="action-arrow">→</span>
                 </Link>
-                <Link to="/map" className="action-card action-map" id="quick-map">
-                    <span className="action-icon">🗺️</span>
-                    <div>
-                        <h3>Map View</h3>
-                        <p>See all spotted locations</p>
-                    </div>
-                    <span className="action-arrow">→</span>
-                </Link>
+                {/* Map View removed */}
                 <Link to="/wishlist" className="action-card action-wishlist" id="quick-wishlist">
                     <span className="action-icon">⭐</span>
                     <div>
