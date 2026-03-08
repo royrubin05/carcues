@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import './PublicPages.css';
+import './LoginPage.css';
 
 export default function VerifyEmailPage() {
     const [searchParams] = useSearchParams();
     const token = searchParams.get('token');
-    const [status, setStatus] = useState('loading'); // loading | success | already | error
+    const [status, setStatus] = useState('loading');
     const [message, setMessage] = useState('');
 
     useEffect(() => {
         if (!token) {
             setStatus('error');
-            setMessage('No verification token provided.');
+            setMessage('No verification token found in the link.');
             return;
         }
 
@@ -19,13 +19,7 @@ export default function VerifyEmailPage() {
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
-                    if (data.message?.includes('already')) {
-                        setStatus('already');
-                        setMessage('Your email is already verified!');
-                    } else {
-                        setStatus('success');
-                        setMessage('Your email has been verified!');
-                    }
+                    setStatus(data.message?.includes('already') ? 'already' : 'success');
                 } else {
                     setStatus('error');
                     setMessage(data.error || 'Verification failed.');
@@ -38,78 +32,75 @@ export default function VerifyEmailPage() {
     }, [token]);
 
     return (
-        <div className="public-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
-            <div style={{
-                textAlign: 'center',
-                padding: '40px',
-                background: 'var(--bg-secondary, #1a1a2e)',
-                borderRadius: '20px',
-                border: '1px solid rgba(255,255,255,0.06)',
-                maxWidth: '420px',
-                width: '100%',
-                margin: '0 16px',
-            }}>
+        <div className="login-page">
+            <div className="login-bg">
+                <div className="login-grid" />
+                <div className="login-glow login-glow-1" />
+                <div className="login-glow login-glow-2" />
+            </div>
+
+            <div className="login-container animate-fade-in-up" style={{ textAlign: 'center' }}>
+                {/* Loading */}
                 {status === 'loading' && (
                     <>
-                        <div style={{ fontSize: '2.5rem', marginBottom: '16px' }}>📧</div>
-                        <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>Verifying your email...</h2>
-                        <p style={{ color: 'var(--text-muted)' }}>Just a moment.</p>
+                        <div style={{ fontSize: '3.5rem', marginBottom: '16px', animation: 'float 2s ease-in-out infinite' }}>📧</div>
+                        <h2 style={{ color: 'var(--text-primary)', marginBottom: '12px', fontSize: '1.5rem' }}>
+                            Verifying your email...
+                        </h2>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Just a moment, we're confirming your account.</p>
                     </>
                 )}
 
+                {/* Success */}
                 {status === 'success' && (
                     <>
-                        <div style={{ fontSize: '2.5rem', marginBottom: '16px' }}>✅</div>
-                        <h2 style={{ color: 'var(--accent-green, #22c55e)', marginBottom: '8px' }}>Email Verified!</h2>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>{message}</p>
-                        <Link to="/" style={{
-                            display: 'inline-block',
-                            background: 'var(--accent-blue, #0ea5e9)',
-                            color: 'white',
-                            padding: '12px 28px',
-                            borderRadius: '10px',
-                            textDecoration: 'none',
-                            fontWeight: 600,
-                        }}>
-                            Go to Dashboard
+                        <div style={{ fontSize: '3.5rem', marginBottom: '16px' }}>🎉</div>
+                        <h2 style={{ color: '#22c55e', marginBottom: '12px', fontSize: '1.5rem' }}>
+                            Email Verified!
+                        </h2>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: '8px', lineHeight: 1.6, fontSize: '0.95rem' }}>
+                            Your email has been successfully verified.
+                        </p>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: '28px', lineHeight: 1.6, fontSize: '0.95rem' }}>
+                            You're all set — head to the login page to sign in and start spotting rare cars!
+                        </p>
+                        <Link to="/login" className="btn btn-primary login-btn" style={{ display: 'inline-block', textDecoration: 'none' }}>
+                            🏎️ Go to Login
                         </Link>
                     </>
                 )}
 
+                {/* Already verified */}
                 {status === 'already' && (
                     <>
-                        <div style={{ fontSize: '2.5rem', marginBottom: '16px' }}>👍</div>
-                        <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>Already Verified</h2>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>{message}</p>
-                        <Link to="/" style={{
-                            display: 'inline-block',
-                            background: 'var(--accent-blue, #0ea5e9)',
-                            color: 'white',
-                            padding: '12px 28px',
-                            borderRadius: '10px',
-                            textDecoration: 'none',
-                            fontWeight: 600,
-                        }}>
-                            Go to Dashboard
+                        <div style={{ fontSize: '3.5rem', marginBottom: '16px' }}>👍</div>
+                        <h2 style={{ color: 'var(--text-primary)', marginBottom: '12px', fontSize: '1.5rem' }}>
+                            Already Verified
+                        </h2>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: '28px', lineHeight: 1.6, fontSize: '0.95rem' }}>
+                            Your email was already verified. You can log in anytime!
+                        </p>
+                        <Link to="/login" className="btn btn-primary login-btn" style={{ display: 'inline-block', textDecoration: 'none' }}>
+                            🏎️ Go to Login
                         </Link>
                     </>
                 )}
 
+                {/* Error */}
                 {status === 'error' && (
                     <>
-                        <div style={{ fontSize: '2.5rem', marginBottom: '16px' }}>❌</div>
-                        <h2 style={{ color: 'var(--accent-orange, #f59e0b)', marginBottom: '8px' }}>Verification Failed</h2>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>{message}</p>
-                        <Link to="/login" style={{
-                            display: 'inline-block',
-                            background: 'var(--accent-blue, #0ea5e9)',
-                            color: 'white',
-                            padding: '12px 28px',
-                            borderRadius: '10px',
-                            textDecoration: 'none',
-                            fontWeight: 600,
-                        }}>
-                            Log In to Resend
+                        <div style={{ fontSize: '3.5rem', marginBottom: '16px' }}>⚠️</div>
+                        <h2 style={{ color: '#f59e0b', marginBottom: '12px', fontSize: '1.5rem' }}>
+                            Verification Failed
+                        </h2>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: '12px', lineHeight: 1.6, fontSize: '0.95rem' }}>
+                            {message}
+                        </p>
+                        <p style={{ color: 'var(--text-muted)', marginBottom: '28px', lineHeight: 1.6, fontSize: '0.85rem' }}>
+                            The link may have expired or already been used. Log in to request a new verification email.
+                        </p>
+                        <Link to="/login" className="btn btn-primary login-btn" style={{ display: 'inline-block', textDecoration: 'none' }}>
+                            Go to Login
                         </Link>
                     </>
                 )}
