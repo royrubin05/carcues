@@ -76,7 +76,7 @@ app.post('/api/auth/register', async (req, res) => {
         if (!username || !email || !password) return res.status(400).json({ error: 'All fields are required' });
         if (username.length < 3) return res.status(400).json({ error: 'Username must be at least 3 characters' });
         if (!/^[a-zA-Z0-9_]+$/.test(username)) return res.status(400).json({ error: 'Username can only contain letters, numbers, and underscores' });
-        if (password.length < 4) return res.status(400).json({ error: 'Password must be at least 4 characters' });
+
 
         const existing = await sql`SELECT id FROM users WHERE LOWER(username) = LOWER(${username}) OR LOWER(email) = LOWER(${email})`;
         if (existing.length > 0) return res.status(400).json({ error: 'Username or email already taken' });
