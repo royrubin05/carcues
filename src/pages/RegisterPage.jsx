@@ -10,6 +10,7 @@ export default function RegisterPage() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [checkEmail, setCheckEmail] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
     const { register } = useAuth();
 
     const handleSubmit = async (e) => {
@@ -26,13 +27,19 @@ export default function RegisterPage() {
             return;
         }
 
-        const result = await register(username, email, password);
-        if (result.success && result.needsVerification) {
-            setCheckEmail(true);
-        } else if (result.success) {
-            window.location.href = '/';
-        } else {
-            setError(result.error);
+        setSubmitting(true);
+        try {
+            const result = await register(username, email, password);
+            console.log('Register result:', result);
+            if (result.success && result.needsVerification) {
+                setCheckEmail(true);
+            } else if (result.success) {
+                window.location.href = '/';
+            } else {
+                setError(result.error);
+            }
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -163,8 +170,8 @@ export default function RegisterPage() {
 
                     {error && <div className="login-error">{error}</div>}
 
-                    <button type="submit" className="btn btn-primary login-btn" id="register-submit">
-                        🚀 Create Account
+                    <button type="submit" className="btn btn-primary login-btn" id="register-submit" disabled={submitting}>
+                        {submitting ? '⏳ Creating Account...' : '🚀 Create Account'}
                     </button>
                 </form>
 

@@ -1,5 +1,5 @@
 // CarCues Service Worker — PWA Offline Support
-const CACHE_NAME = 'carcues-v2';
+const CACHE_NAME = 'carcues-v3';
 const OFFLINE_URL = '/';
 
 // Assets to pre-cache for offline shell
