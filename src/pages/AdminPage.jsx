@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getAuditData, clearAuditLog } from '../services/aiAuditService';
 import { api } from '../services/apiClient';
+import { getEstimatedMSRP } from '../services/vehicleDataService';
 import StatsCard from '../components/StatsCard';
 import './AdminPage.css';
 
@@ -147,6 +148,12 @@ export default function AdminPage() {
                 <StatsCard icon="📸" label="Total Spots" value={platformStats.totalSpots} color="var(--accent-green)" delay={1} />
                 <StatsCard icon="⭐" label="Total Wishlist Items" value={platformStats.totalWishlist} color="var(--accent-orange)" delay={2} />
                 <StatsCard icon="🏆" label="Total Rarity Points" value={platformStats.totalPoints} color="var(--accent-gold)" delay={3} />
+                <StatsCard icon="💰" label="Platform Value" value={(() => {
+                    const total = allSpots.reduce((sum, s) => sum + (getEstimatedMSRP(s.car.make, s.car.model) || 0), 0);
+                    if (total >= 1000000) return `$${(total / 1000000).toFixed(1)}M`;
+                    if (total >= 1000) return `$${(total / 1000).toFixed(0)}K`;
+                    return `$${total}`;
+                })()} color="var(--accent-cyan, #22d3ee)" delay={4} />
             </div>
 
             {/* Tab Navigation */}
