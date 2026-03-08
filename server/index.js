@@ -159,6 +159,48 @@ app.get('/api/users', requireAuth, requireAdmin, async (req, res) => {
     }
 });
 
+app.post('/api/users', requireAuth, requireAdmin, async (req, res) => {
+    try {
+        const { username, email, password, role } = req.body;
+        if (!username || !email || !password) return res.status(400).json({ error: 'Username, email, and password are required' });
+        if (username.length < 3) return res.status(400).json({ error: 'Username must be at least 3 characters' });
+        if (password.length < 4) return res.status(400).json({ error: 'Password must be at least 4 characters' });
+
+        const existing = await sql`SELECT id FROM users WHERE LOWER(username) = LOWER(${username}) OR LOWER(email) = LOWER(${email})`;
+        if (existing.length > 0) return res.status(400).json({ error: 'Username or email already taken' });
+
+        const avatars = ['🏎️', '🔧', '💨', '⚙️', '🏁', '🚗', '🛞', '🔑', '🚀', '💎'];
+        const avatar = avatars[Math.floor(Math.random() * avatars.length)];
+        const userRole = role === 'admin' ? 'admin' : 'user';
+
+        const [user] = await sql`
+            INSERT INTO users (username, email, role, avatar, password_hash)
+            VALUES (${username}, ${email}, ${userRole}, ${avatar}, ${simpleHash(password)})
+            RETURNING id, username, email, role, avatar, joined_at
+        `;
+        res.json({ success: true, user });
+    } catch (err) {
+        console.error('Create user error:', err);
+        res.status(500).json({ error: 'Failed to create user' });
+    }
+});
+
+app.delete('/api/users/:id', requireAuth, requireAdmin, async (req, res) => {
+    try {
+        const userId = parseInt(req.params.id);
+        // Don't allow deleting yourself
+        if (userId === req.user.user_id) return res.status(400).json({ error: 'Cannot delete your own account' });
+
+        // Cascade: delete sessions, audit refs are SET NULL via FK
+        await sql`DELETE FROM sessions WHERE user_id = ${userId}`;
+        await sql`DELETE FROM users WHERE id = ${userId}`;
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Delete user error:', err);
+        res.status(500).json({ error: 'Failed to delete user' });
+    }
+});
+
 // ══════════════════════════════════════════════
 // SPOTS ROUTES
 // ══════════════════════════════════════════════

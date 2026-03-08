@@ -19,6 +19,12 @@ export default function AdminPage() {
     const [resetMsg, setResetMsg] = useState('');
     const [auditPage, setAuditPage] = useState(1);
 
+    // Create user form state
+    const [showCreateForm, setShowCreateForm] = useState(false);
+    const [createForm, setCreateForm] = useState({ username: '', email: '', password: '', role: 'user' });
+    const [createError, setCreateError] = useState('');
+    const [deleteConfirm, setDeleteConfirm] = useState(null);
+
     // API data state
     const [users, setUsers] = useState([]);
     const [platformStats, setPlatformStats] = useState({ totalUsers: 0, totalSpots: 0, totalWishlist: 0, totalPoints: 0 });
@@ -70,6 +76,42 @@ export default function AdminPage() {
             setTimeout(() => setResetMsg(''), 3000);
         } else {
             setResetMsg(result.error);
+        }
+    };
+
+    const handleCreateUser = async (e) => {
+        e.preventDefault();
+        setCreateError('');
+        try {
+            const data = await api('/api/users', {
+                method: 'POST',
+                body: JSON.stringify(createForm),
+            });
+            if (data.success) {
+                setUsers(prev => [data.user, ...prev]);
+                setCreateForm({ username: '', email: '', password: '', role: 'user' });
+                setShowCreateForm(false);
+                setResetMsg(`User "${data.user.username}" created successfully`);
+                setTimeout(() => setResetMsg(''), 3000);
+            } else {
+                setCreateError(data.error || 'Failed to create user');
+            }
+        } catch (err) {
+            setCreateError(err.message || 'Failed to create user');
+        }
+    };
+
+    const handleDeleteUser = async (userId, username) => {
+        try {
+            const data = await api(`/api/users/${userId}`, { method: 'DELETE' });
+            if (data.success) {
+                setUsers(prev => prev.filter(u => u.id !== userId));
+                setDeleteConfirm(null);
+                setResetMsg(`User "${username}" deleted`);
+                setTimeout(() => setResetMsg(''), 3000);
+            }
+        } catch (err) {
+            setResetMsg(err.message || 'Failed to delete user');
         }
     };
 
@@ -129,6 +171,49 @@ export default function AdminPage() {
             {/* Users Table */}
             {activeTab === 'users' && (
                 <>
+                    {/* Create User Form */}
+                    <div className="admin-table-container animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                        <button
+                            className="btn btn-primary"
+                            onClick={() => { setShowCreateForm(!showCreateForm); setCreateError(''); }}
+                            style={{ marginBottom: showCreateForm ? '16px' : 0 }}
+                        >
+                            {showCreateForm ? '✕ Cancel' : '➕ Create User'}
+                        </button>
+
+                        {showCreateForm && (
+                            <form onSubmit={handleCreateUser} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '12px' }}>
+                                <div className="form-group" style={{ margin: 0 }}>
+                                    <label>Username</label>
+                                    <input className="input" placeholder="username" value={createForm.username}
+                                        onChange={e => setCreateForm(f => ({ ...f, username: e.target.value }))} required />
+                                </div>
+                                <div className="form-group" style={{ margin: 0 }}>
+                                    <label>Email</label>
+                                    <input className="input" type="email" placeholder="email@example.com" value={createForm.email}
+                                        onChange={e => setCreateForm(f => ({ ...f, email: e.target.value }))} required />
+                                </div>
+                                <div className="form-group" style={{ margin: 0 }}>
+                                    <label>Password</label>
+                                    <input className="input" type="password" placeholder="password" value={createForm.password}
+                                        onChange={e => setCreateForm(f => ({ ...f, password: e.target.value }))} required />
+                                </div>
+                                <div className="form-group" style={{ margin: 0 }}>
+                                    <label>Role</label>
+                                    <select className="input" value={createForm.role}
+                                        onChange={e => setCreateForm(f => ({ ...f, role: e.target.value }))}>
+                                        <option value="user">User</option>
+                                        <option value="admin">Admin</option>
+                                    </select>
+                                </div>
+                                <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                    <button type="submit" className="btn btn-primary">Create User</button>
+                                    {createError && <span style={{ color: 'var(--accent-red, #ef4444)', fontSize: '0.85rem' }}>{createError}</span>}
+                                </div>
+                            </form>
+                        )}
+                    </div>
+
                     <div className="admin-table-container animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
                         <div className="admin-table-toolbar">
                             <h2 className="section-title">All Users ({filteredUsers.length})</h2>
@@ -172,13 +257,32 @@ export default function AdminPage() {
                                     </span>
                                     <span className="admin-actions">
                                         {user.role !== 'admin' && (
-                                            <button
-                                                className="btn btn-sm btn-ghost admin-action-btn"
-                                                onClick={() => { setResetModal(user); setNewPassword(''); setResetMsg(''); }}
-                                                title="Reset password"
-                                            >
-                                                🔑
-                                            </button>
+                                            <>
+                                                <button
+                                                    className="btn btn-sm btn-ghost admin-action-btn"
+                                                    onClick={() => { setResetModal(user); setNewPassword(''); setResetMsg(''); }}
+                                                    title="Reset password"
+                                                >
+                                                    🔑
+                                                </button>
+                                                {deleteConfirm === user.id ? (
+                                                    <span style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                                                        <button className="btn btn-sm" style={{ background: 'var(--accent-red, #ef4444)', color: 'white', fontSize: '0.75rem' }}
+                                                            onClick={() => handleDeleteUser(user.id, user.username)}>Confirm</button>
+                                                        <button className="btn btn-sm btn-ghost" style={{ fontSize: '0.75rem' }}
+                                                            onClick={() => setDeleteConfirm(null)}>✕</button>
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        className="btn btn-sm btn-ghost admin-action-btn"
+                                                        onClick={() => setDeleteConfirm(user.id)}
+                                                        title="Delete user"
+                                                        style={{ color: 'var(--accent-red, #ef4444)' }}
+                                                    >
+                                                        🗑️
+                                                    </button>
+                                                )}
+                                            </>
                                         )}
                                     </span>
                                 </div>
