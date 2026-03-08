@@ -540,6 +540,25 @@ app.get('/api/admin/stats', requireAuth, requireAdmin, async (req, res) => {
     }
 });
 
+app.get('/api/admin/spots', requireAuth, requireAdmin, async (req, res) => {
+    try {
+        const spots = await sql`
+            SELECT s.*, u.username, u.avatar
+            FROM spots s JOIN users u ON s.user_id = u.id
+            ORDER BY s.spotted_at DESC
+        `;
+        res.json({
+            spots: spots.map(s => ({
+                ...formatSpot(s),
+                spotter: { username: s.username, avatar: s.avatar },
+            })),
+        });
+    } catch (err) {
+        console.error('Admin spots error:', err);
+        res.status(500).json({ error: 'Failed to fetch spots' });
+    }
+});
+
 // ══════════════════════════════════════════════
 // PUBLIC ROUTES (no auth — for sharing)
 // ══════════════════════════════════════════════

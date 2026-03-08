@@ -27,18 +27,22 @@ export default function AdminPage() {
 
     // API data state
     const [users, setUsers] = useState([]);
+    const [allSpots, setAllSpots] = useState([]);
+    const [spotSearch, setSpotSearch] = useState('');
     const [platformStats, setPlatformStats] = useState({ totalUsers: 0, totalSpots: 0, totalWishlist: 0, totalPoints: 0 });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function loadAdminData() {
             try {
-                const [usersData, statsData] = await Promise.all([
+                const [usersData, statsData, spotsData] = await Promise.all([
                     api('/api/users'),
                     api('/api/admin/stats'),
+                    api('/api/admin/spots'),
                 ]);
                 setUsers(usersData.users);
                 setPlatformStats(statsData);
+                setAllSpots(spotsData.spots || []);
             } catch (err) {
                 console.error('Failed to load admin data:', err);
             } finally {
@@ -152,6 +156,12 @@ export default function AdminPage() {
                     onClick={() => setActiveTab('users')}
                 >
                     👥 Users
+                </button>
+                <button
+                    className={`admin-tab ${activeTab === 'spots' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('spots')}
+                >
+                    📸 All Spots
                 </button>
                 <button
                     className={`admin-tab ${activeTab === 'ai' ? 'active' : ''}`}
@@ -361,6 +371,69 @@ export default function AdminPage() {
                         </div>
                     )}
                 </>
+            )}
+
+            {/* All Spots Tab */}
+            {activeTab === 'spots' && (
+                <div className="admin-table-container animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+                    <div className="admin-table-toolbar">
+                        <h2 className="section-title">All Spots ({allSpots.length})</h2>
+                        <input
+                            type="text"
+                            className="input admin-search"
+                            placeholder="🔍 Search by car, user..."
+                            value={spotSearch}
+                            onChange={(e) => setSpotSearch(e.target.value)}
+                        />
+                    </div>
+                    <div className="admin-user-list">
+                        {allSpots
+                            .filter(s => {
+                                if (!spotSearch) return true;
+                                const q = spotSearch.toLowerCase();
+                                return (
+                                    s.car.make?.toLowerCase().includes(q) ||
+                                    s.car.model?.toLowerCase().includes(q) ||
+                                    s.spotter?.username?.toLowerCase().includes(q) ||
+                                    s.location?.city?.toLowerCase().includes(q)
+                                );
+                            })
+                            .map(spot => (
+                                <div key={spot.id} className="admin-user-row" style={{ gap: '12px' }}>
+                                    {spot.car.image && (
+                                        <img
+                                            src={spot.car.image}
+                                            alt={spot.car.model}
+                                            style={{ width: '56px', height: '42px', objectFit: 'cover', borderRadius: '8px', flexShrink: 0 }}
+                                        />
+                                    )}
+                                    <span className="admin-user-info" style={{ flex: 1 }}>
+                                        <span className="admin-username" style={{ fontSize: '0.95rem' }}>
+                                            {spot.car.make} {spot.car.model}
+                                        </span>
+                                        <span className="admin-email" style={{ fontSize: '0.8rem' }}>
+                                            {spot.spotter?.avatar} {spot.spotter?.username}
+                                            {spot.location?.city && ` · 📍 ${spot.location.city}`}
+                                        </span>
+                                    </span>
+                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                                        {new Date(spot.spottedAt).toLocaleDateString()}
+                                    </span>
+                                    <span className={`admin-role-badge`} style={{
+                                        background: spot.car.rarity >= 70 ? 'var(--accent-gold)' :
+                                            spot.car.rarity >= 50 ? 'var(--accent-purple)' :
+                                                spot.car.rarity >= 35 ? 'var(--accent-blue)' : 'var(--bg-tertiary)',
+                                        color: spot.car.rarity >= 35 ? '#000' : 'var(--text-secondary)',
+                                    }}>
+                                        ⭐ {spot.car.rarity}
+                                    </span>
+                                </div>
+                            ))}
+                        {allSpots.length === 0 && (
+                            <div className="admin-empty">No spots yet</div>
+                        )}
+                    </div>
+                </div>
             )}
 
             {/* AI Performance Tab */}
