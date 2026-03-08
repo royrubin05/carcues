@@ -140,7 +140,15 @@ app.get('/api/auth/verify-email', async (req, res) => {
         if (tokens.length === 0) return res.status(400).json({ error: 'Invalid verification link' });
 
         const record = tokens[0];
-        if (record.used) return res.json({ success: true, message: 'Email already verified' });
+
+        // Already used — still create session so user can auto-login
+        if (record.used) {
+            const [user] = await sql`SELECT id, username, email, role, avatar, joined_at, email_verified FROM users WHERE id = ${record.user_id}`;
+            const sessionToken = generateToken();
+            await sql`INSERT INTO sessions (id, user_id) VALUES (${sessionToken}, ${user.id})`;
+            return res.json({ success: true, message: 'Email already verified', user, token: sessionToken });
+        }
+
         if (new Date(record.expires_at) < new Date()) {
             return res.status(400).json({ error: 'Verification link has expired. Please request a new one.' });
         }
@@ -148,7 +156,12 @@ app.get('/api/auth/verify-email', async (req, res) => {
         await sql`UPDATE users SET email_verified = true, email_verified_at = NOW() WHERE id = ${record.user_id}`;
         await sql`UPDATE email_verification_tokens SET used = true WHERE id = ${record.id}`;
 
-        res.json({ success: true, message: 'Email verified successfully!' });
+        // Auto-login: create session and return user + token
+        const [user] = await sql`SELECT id, username, email, role, avatar, joined_at, email_verified FROM users WHERE id = ${record.user_id}`;
+        const sessionToken = generateToken();
+        await sql`INSERT INTO sessions (id, user_id) VALUES (${sessionToken}, ${user.id})`;
+
+        res.json({ success: true, message: 'Email verified successfully!', user, token: sessionToken });
     } catch (err) {
         console.error('Verify email error:', err);
         res.status(500).json({ error: 'Verification failed' });

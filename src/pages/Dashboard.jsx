@@ -5,7 +5,7 @@ import { getEstimatedMSRP } from '../services/vehicleDataService';
 import StatsCard from '../components/StatsCard';
 import CarCard from '../components/CarCard';
 import { getRarityTier } from '../data/mockData';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import './Dashboard.css';
 
 export default function Dashboard() {
@@ -14,6 +14,18 @@ export default function Dashboard() {
     const [recentSpots, setRecentSpots] = useState([]);
     const [allSpots, setAllSpots] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [showVerifiedModal, setShowVerifiedModal] = useState(false);
+
+    // Check if user just verified their email
+    useEffect(() => {
+        if (searchParams.get('verified') === 'true') {
+            setShowVerifiedModal(true);
+            // Clean up URL
+            searchParams.delete('verified');
+            setSearchParams(searchParams, { replace: true });
+        }
+    }, []);
 
     // Admin users are redirected to the admin dashboard
     if (isAdmin) {
@@ -152,6 +164,45 @@ export default function Dashboard() {
                     )}
                 </div>
             </div>
+
+            {/* Email Verification Celebration Modal */}
+            {showVerifiedModal && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    zIndex: 9999, padding: '20px',
+                }} onClick={() => setShowVerifiedModal(false)}>
+                    <div style={{
+                        background: 'var(--bg-secondary, #1a1a2e)',
+                        border: '1px solid rgba(14, 165, 233, 0.2)',
+                        borderRadius: '20px',
+                        padding: '40px 36px',
+                        maxWidth: '420px',
+                        width: '100%',
+                        textAlign: 'center',
+                        animation: 'fadeInUp 0.4s ease-out',
+                    }} onClick={e => e.stopPropagation()}>
+                        <div style={{ fontSize: '3.5rem', marginBottom: '16px' }}>🎉</div>
+                        <h2 style={{ color: '#22c55e', fontSize: '1.5rem', marginBottom: '12px' }}>
+                            Email Verified!
+                        </h2>
+                        <p style={{ color: 'var(--text-primary)', fontSize: '1.05rem', marginBottom: '8px', lineHeight: 1.6 }}>
+                            Thank you for verifying, <strong>{user?.username}</strong>!
+                        </p>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '28px', lineHeight: 1.6 }}>
+                            You're now logged in and ready to start spotting cool cars. 🏎️
+                        </p>
+                        <button
+                            className="btn btn-primary"
+                            onClick={() => setShowVerifiedModal(false)}
+                            style={{ padding: '12px 32px', fontSize: '1rem', cursor: 'pointer' }}
+                        >
+                            🚀 Start Spotting
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

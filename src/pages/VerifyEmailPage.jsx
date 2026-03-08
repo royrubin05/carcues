@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { setToken as setApiToken } from '../services/apiClient';
 import './LoginPage.css';
 
 export default function VerifyEmailPage() {
@@ -7,6 +9,7 @@ export default function VerifyEmailPage() {
     const token = searchParams.get('token');
     const [status, setStatus] = useState('loading');
     const [message, setMessage] = useState('');
+    const { setUser } = useAuth();
 
     useEffect(() => {
         if (!token) {
@@ -18,8 +21,13 @@ export default function VerifyEmailPage() {
         fetch(`/api/auth/verify-email?token=${token}`)
             .then(r => r.json())
             .then(data => {
-                if (data.success) {
-                    setStatus(data.message?.includes('already') ? 'already' : 'success');
+                if (data.success && data.token && data.user) {
+                    // Auto-login: store session and redirect to dashboard
+                    setApiToken(data.token);
+                    setUser(data.user);
+                    window.location.href = '/?verified=true';
+                } else if (data.success) {
+                    setStatus('success');
                 } else {
                     setStatus('error');
                     setMessage(data.error || 'Verification failed.');
@@ -40,7 +48,6 @@ export default function VerifyEmailPage() {
             </div>
 
             <div className="login-container animate-fade-in-up" style={{ textAlign: 'center' }}>
-                {/* Loading */}
                 {status === 'loading' && (
                     <>
                         <div style={{ fontSize: '3.5rem', marginBottom: '16px', animation: 'float 2s ease-in-out infinite' }}>📧</div>
@@ -51,42 +58,6 @@ export default function VerifyEmailPage() {
                     </>
                 )}
 
-                {/* Success */}
-                {status === 'success' && (
-                    <>
-                        <div style={{ fontSize: '3.5rem', marginBottom: '16px' }}>🎉</div>
-                        <h2 style={{ color: '#22c55e', marginBottom: '12px', fontSize: '1.5rem' }}>
-                            Email Verified!
-                        </h2>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '8px', lineHeight: 1.6, fontSize: '0.95rem' }}>
-                            Your email has been successfully verified.
-                        </p>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '28px', lineHeight: 1.6, fontSize: '0.95rem' }}>
-                            You're all set — head to the login page to sign in and start spotting rare cars!
-                        </p>
-                        <Link to="/login" className="btn btn-primary login-btn" style={{ display: 'inline-block', textDecoration: 'none' }}>
-                            🏎️ Go to Login
-                        </Link>
-                    </>
-                )}
-
-                {/* Already verified */}
-                {status === 'already' && (
-                    <>
-                        <div style={{ fontSize: '3.5rem', marginBottom: '16px' }}>👍</div>
-                        <h2 style={{ color: 'var(--text-primary)', marginBottom: '12px', fontSize: '1.5rem' }}>
-                            Already Verified
-                        </h2>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '28px', lineHeight: 1.6, fontSize: '0.95rem' }}>
-                            Your email was already verified. You can log in anytime!
-                        </p>
-                        <Link to="/login" className="btn btn-primary login-btn" style={{ display: 'inline-block', textDecoration: 'none' }}>
-                            🏎️ Go to Login
-                        </Link>
-                    </>
-                )}
-
-                {/* Error */}
                 {status === 'error' && (
                     <>
                         <div style={{ fontSize: '3.5rem', marginBottom: '16px' }}>⚠️</div>
@@ -97,11 +68,11 @@ export default function VerifyEmailPage() {
                             {message}
                         </p>
                         <p style={{ color: 'var(--text-muted)', marginBottom: '28px', lineHeight: 1.6, fontSize: '0.85rem' }}>
-                            The link may have expired or already been used. Log in to request a new verification email.
+                            The link may have expired or already been used. Try logging in to request a new one.
                         </p>
-                        <Link to="/login" className="btn btn-primary login-btn" style={{ display: 'inline-block', textDecoration: 'none' }}>
+                        <a href="/login" className="btn btn-primary login-btn" style={{ display: 'inline-block', textDecoration: 'none' }}>
                             Go to Login
-                        </Link>
+                        </a>
                     </>
                 )}
             </div>
