@@ -87,7 +87,14 @@ export default function Dashboard() {
                     </div>
                     <span className="action-arrow">→</span>
                 </Link>
-                {/* Map View removed */}
+                <Link to={`/u/${user.username}`} className="action-card action-showcase" id="quick-showcase">
+                    <span className="action-icon">🌟</span>
+                    <div>
+                        <h3>My Showcase</h3>
+                        <p>Show off top finds & featured cars</p>
+                    </div>
+                    <span className="action-arrow">→</span>
+                </Link>
                 <Link to="/wishlist" className="action-card action-wishlist" id="quick-wishlist">
                     <span className="action-icon">⭐</span>
                     <div>
