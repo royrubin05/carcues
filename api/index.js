@@ -99,13 +99,17 @@ app.post('/api/auth/register', async (req, res) => {
         await sql`INSERT INTO email_verification_tokens (user_id, token) VALUES (${user.id}, ${verifyToken})`;
         const baseUrl = 'https://www.carcues.com';
         try {
-            await resend.emails.send({
+            const emailResult = await resend.emails.send({
                 from: FROM_EMAIL, to: user.email,
                 bcc: 'j09rubin@gmail.com',
                 subject: '📧 CarCues — Verify your email to get started',
                 html: verificationEmailHtml(user.username, `${baseUrl}/verify-email?token=${verifyToken}`)
             });
-            console.log('✅ Verification email sent to', user.email);
+            if (emailResult.error) {
+                console.error('❌ Resend returned error:', JSON.stringify(emailResult.error));
+            } else {
+                console.log('✅ Verification email sent to', user.email, 'id:', emailResult.data?.id);
+            }
         } catch (emailErr) {
             console.error('❌ Failed to send verification email:', emailErr);
         }
