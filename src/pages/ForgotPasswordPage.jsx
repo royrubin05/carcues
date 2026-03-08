@@ -5,12 +5,33 @@ import './LoginPage.css';
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState('');
     const [submitted, setSubmitted] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (!email) return;
-        // TODO: Wire up to password recovery API when available
-        setSubmitted(true);
+
+        setLoading(true);
+        setError('');
+
+        try {
+            const res = await fetch('/api/auth/forgot-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            });
+            const data = await res.json();
+            if (data.error) {
+                setError(data.error);
+            } else {
+                setSubmitted(true);
+            }
+        } catch {
+            setError('Something went wrong. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -47,8 +68,15 @@ export default function ForgotPasswordPage() {
                             />
                         </div>
 
-                        <button type="submit" className="btn btn-primary login-btn" id="forgot-submit">
-                            📧 Send Recovery Email
+                        {error && <div className="login-error">{error}</div>}
+
+                        <button
+                            type="submit"
+                            className="btn btn-primary login-btn"
+                            id="forgot-submit"
+                            disabled={loading}
+                        >
+                            {loading ? '⏳ Sending...' : '📧 Send Recovery Email'}
                         </button>
                     </form>
                 ) : (

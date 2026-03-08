@@ -2,12 +2,15 @@ import express from 'express';
 import cors from 'cors';
 import crypto from 'crypto';
 import { neon } from '@neondatabase/serverless';
+import { Resend } from 'resend';
 
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
 const sql = neon(process.env.DATABASE_URL);
+const resend = new Resend(process.env.RESEND_API_KEY);
+const FROM_EMAIL = 'CarCues <no-reply@carcues.com>';
 
 // ══════════════════════════════════════════════
 // Helpers
@@ -87,6 +90,15 @@ app.post('/api/auth/register', async (req, res) => {
         `;
         const token = generateToken();
         await sql`INSERT INTO sessions (id, user_id) VALUES (${token}, ${user.id})`;
+        // Notify admin of new registration (fire-and-forget)
+        const adminEmail = process.env.ADMIN_EMAIL;
+        if (adminEmail) {
+            resend.emails.send({
+                from: FROM_EMAIL, to: adminEmail,
+                subject: `\uD83C\uDD95 New CarCues User: ${user.username}`,
+                html: `<div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:32px;background:#0f0f1a;color:#e0e0e8;border-radius:16px;"><h1 style="color:#0ea5e9;">CarCues</h1><p>New user registered:</p><div style="background:#1a1a2e;padding:20px;border-radius:12px;"><p><strong>Username:</strong> ${user.username}</p><p><strong>Email:</strong> ${user.email}</p><p><strong>Avatar:</strong> ${user.avatar}</p></div></div>`
+            }).catch(() => { });
+        }
         res.json({ success: true, user, token });
     } catch (err) { console.error('Register error:', err); res.status(500).json({ error: 'Registration failed' }); }
 });
@@ -125,6 +137,39 @@ app.post('/api/auth/reset-password', requireAuth, requireAdmin, async (req, res)
         await sql`DELETE FROM sessions WHERE user_id = ${userId}`;
         res.json({ success: true });
     } catch (err) { res.status(500).json({ error: 'Failed to reset password' }); }
+});
+
+app.post('/api/auth/forgot-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ error: 'Email is required' });
+        const users = await sql`SELECT id, email FROM users WHERE LOWER(email) = LOWER(${email})`;
+        if (users.length === 0) return res.json({ success: true });
+        const user = users[0];
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        await sql`INSERT INTO password_reset_tokens (user_id, token) VALUES (${user.id}, ${resetToken})`;
+        const baseUrl = req.headers.origin || 'https://www.carcues.com';
+        await resend.emails.send({
+            from: FROM_EMAIL, to: user.email,
+            subject: '\uD83D\uDD11 CarCues \u2014 Reset Your Password',
+            html: `<div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:32px;background:#0f0f1a;color:#e0e0e8;border-radius:16px;"><h1 style="color:#0ea5e9;">CarCues</h1><p>Click below to reset your password:</p><div style="text-align:center;margin:28px 0;"><a href="${baseUrl}/reset-password?token=${resetToken}" style="background:#0ea5e9;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:16px;display:inline-block;">Reset Password</a></div><p style="color:#888;font-size:13px;">This link expires in 1 hour.</p></div>`
+        });
+        res.json({ success: true });
+    } catch (err) { console.error('Forgot password error:', err); res.status(500).json({ error: 'Failed to process request' }); }
+});
+
+app.post('/api/auth/reset-password-token', async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+        if (!token || !newPassword || newPassword.length < 4) return res.status(400).json({ error: 'Valid token and password (4+ chars) required' });
+        const tokens = await sql`SELECT * FROM password_reset_tokens WHERE token = ${token} AND used = false AND expires_at > NOW()`;
+        if (tokens.length === 0) return res.status(400).json({ error: 'Invalid or expired reset link' });
+        const resetRecord = tokens[0];
+        await sql`UPDATE users SET password_hash = ${simpleHash(newPassword)} WHERE id = ${resetRecord.user_id}`;
+        await sql`UPDATE password_reset_tokens SET used = true WHERE id = ${resetRecord.id}`;
+        await sql`DELETE FROM sessions WHERE user_id = ${resetRecord.user_id}`;
+        res.json({ success: true });
+    } catch (err) { console.error('Reset with token error:', err); res.status(500).json({ error: 'Failed to reset password' }); }
 });
 
 // ══════════════════════════════════════════════

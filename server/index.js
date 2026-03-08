@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import crypto from 'crypto';
 import sql from './db.js';
+import { sendPasswordResetEmail, sendNewUserNotification } from './email.js';
 
 const app = express();
 app.use(cors());
@@ -80,6 +81,9 @@ app.post('/api/auth/register', async (req, res) => {
         const token = generateToken();
         await sql`INSERT INTO sessions (id, user_id) VALUES (${token}, ${user.id})`;
 
+        // Notify admin of new registration (fire-and-forget)
+        sendNewUserNotification(user).catch(() => { });
+
         res.json({ success: true, user, token });
     } catch (err) {
         console.error('Register error:', err);
@@ -139,6 +143,64 @@ app.post('/api/auth/reset-password', requireAuth, requireAdmin, async (req, res)
         res.json({ success: true });
     } catch (err) {
         console.error('Reset password error:', err);
+        res.status(500).json({ error: 'Failed to reset password' });
+    }
+});
+
+// Forgot password — sends email with reset link
+app.post('/api/auth/forgot-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ error: 'Email is required' });
+
+        // Always return success to prevent email enumeration
+        const users = await sql`SELECT id, email FROM users WHERE LOWER(email) = LOWER(${email})`;
+        if (users.length === 0) return res.json({ success: true });
+
+        const user = users[0];
+        const resetToken = crypto.randomBytes(32).toString('hex');
+
+        // Store token
+        await sql`INSERT INTO password_reset_tokens (user_id, token) VALUES (${user.id}, ${resetToken})`;
+
+        // Determine base URL
+        const baseUrl = req.headers.origin || req.headers.referer?.replace(/\/$/, '') || 'https://www.carcues.com';
+
+        // Send email
+        await sendPasswordResetEmail(user.email, resetToken, baseUrl);
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Forgot password error:', err);
+        res.status(500).json({ error: 'Failed to process request' });
+    }
+});
+
+// Reset password with token (from email link)
+app.post('/api/auth/reset-password-token', async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+        if (!token || !newPassword || newPassword.length < 4) {
+            return res.status(400).json({ error: 'Valid token and password (4+ chars) required' });
+        }
+
+        const tokens = await sql`
+            SELECT * FROM password_reset_tokens
+            WHERE token = ${token} AND used = false AND expires_at > NOW()
+        `;
+        if (tokens.length === 0) return res.status(400).json({ error: 'Invalid or expired reset link' });
+
+        const resetRecord = tokens[0];
+
+        // Update password
+        await sql`UPDATE users SET password_hash = ${simpleHash(newPassword)} WHERE id = ${resetRecord.user_id}`;
+        // Mark token as used
+        await sql`UPDATE password_reset_tokens SET used = true WHERE id = ${resetRecord.id}`;
+        // Invalidate all sessions
+        await sql`DELETE FROM sessions WHERE user_id = ${resetRecord.user_id}`;
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Reset with token error:', err);
         res.status(500).json({ error: 'Failed to reset password' });
     }
 });

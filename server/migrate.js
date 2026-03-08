@@ -86,6 +86,18 @@ async function migrate() {
     `;
     console.log('✅ car_database table ready');
 
+    await sql`
+        CREATE TABLE IF NOT EXISTS password_reset_tokens (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+            token VARCHAR(64) UNIQUE NOT NULL,
+            expires_at TIMESTAMPTZ DEFAULT (NOW() + INTERVAL '1 hour'),
+            used BOOLEAN DEFAULT false,
+            created_at TIMESTAMPTZ DEFAULT NOW()
+        )
+    `;
+    console.log('✅ password_reset_tokens table ready');
+
     console.log('\n🎉 Migration complete! Tables are ready.');
 }
 
