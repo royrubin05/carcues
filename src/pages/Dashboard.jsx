@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getUserStats, getUserSpots } from '../services/carService';
+import { getEstimatedMSRP } from '../services/vehicleDataService';
 import StatsCard from '../components/StatsCard';
 import CarCard from '../components/CarCard';
 import { getRarityTier } from '../data/mockData';
@@ -11,6 +12,7 @@ export default function Dashboard() {
     const { user, isAdmin } = useAuth();
     const [stats, setStats] = useState(null);
     const [recentSpots, setRecentSpots] = useState([]);
+    const [allSpots, setAllSpots] = useState([]);
     const [loading, setLoading] = useState(true);
 
     // Admin users are redirected to the admin dashboard
@@ -26,6 +28,7 @@ export default function Dashboard() {
                     getUserSpots(user.id),
                 ]);
                 setStats(statsData);
+                setAllSpots(spotsData);
                 setRecentSpots(spotsData.slice(0, 4));
             } catch (err) {
                 console.error('Failed to load dashboard:', err);
@@ -75,6 +78,12 @@ export default function Dashboard() {
                 <StatsCard icon="⭐" label="Rarity Points" value={stats.totalRarityPoints} color="var(--accent-gold)" delay={1} />
                 <StatsCard icon="🏭" label="Unique Makes" value={stats.uniqueMakes} color="var(--accent-green)" delay={2} />
                 <StatsCard icon="📊" label="Avg Rarity" value={stats.averageRarity} color="var(--accent-purple)" delay={3} />
+                <StatsCard icon="💰" label="Collection Value" value={(() => {
+                    const total = allSpots.reduce((sum, s) => sum + (getEstimatedMSRP(s.car.make, s.car.model) || 0), 0);
+                    if (total >= 1000000) return `$${(total / 1000000).toFixed(1)}M`;
+                    if (total >= 1000) return `$${(total / 1000).toFixed(0)}K`;
+                    return `$${total}`;
+                })()} color="var(--accent-cyan, #22d3ee)" delay={4} />
             </div>
 
             {/* Quick Actions */}
