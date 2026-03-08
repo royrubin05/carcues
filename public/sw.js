@@ -1,10 +1,9 @@
 // CarCues Service Worker — PWA Offline Support
-const CACHE_NAME = 'carcues-v1';
+const CACHE_NAME = 'carcues-v2';
 const OFFLINE_URL = '/';
 
 // Assets to pre-cache for offline shell
 const PRECACHE_ASSETS = [
-    '/',
     '/manifest.json',
     '/icon-192.png',
     '/icon-512.png',
@@ -21,7 +20,7 @@ self.addEventListener('install', (event) => {
     self.skipWaiting();
 });
 
-// Activate: clean old caches
+// Activate: clean old caches immediately
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((keys) => {
@@ -33,7 +32,7 @@ self.addEventListener('activate', (event) => {
     self.clients.claim();
 });
 
-// Fetch: network-first for API, cache-first for assets
+// Fetch strategy
 self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
@@ -44,24 +43,24 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // Static assets: cache-first
-    event.respondWith(
-        caches.match(request).then((cached) => {
-            if (cached) return cached;
+    // Navigation requests (HTML pages): network-first
+    if (request.mode === 'navigate') {
+        event.respondWith(
+            fetch(request).catch(() => caches.match(OFFLINE_URL))
+        );
+        return;
+    }
 
-            return fetch(request).then((response) => {
-                // Cache successful GET responses
-                if (response.ok && request.method === 'GET') {
-                    const clone = response.clone();
-                    caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-                }
-                return response;
-            }).catch(() => {
-                // Offline fallback: return cached index for navigation
-                if (request.mode === 'navigate') {
-                    return caches.match(OFFLINE_URL);
-                }
-            });
+    // Static assets (JS, CSS, images): network-first with cache fallback
+    event.respondWith(
+        fetch(request).then((response) => {
+            if (response.ok && request.method === 'GET') {
+                const clone = response.clone();
+                caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+            }
+            return response;
+        }).catch(() => {
+            return caches.match(request);
         })
     );
 });
