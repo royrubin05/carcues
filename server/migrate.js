@@ -98,6 +98,10 @@ async function migrate() {
     `;
     console.log('✅ password_reset_tokens table ready');
 
+    // Add starred column if it doesn't exist
+    await sql`ALTER TABLE spots ADD COLUMN IF NOT EXISTS starred BOOLEAN DEFAULT false`;
+    console.log('✅ starred column ready');
+
     console.log('\n🎉 Migration complete! Tables are ready.');
 }
 

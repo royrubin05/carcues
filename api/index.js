@@ -62,6 +62,7 @@ function formatSpot(row) {
         } : null,
         source: row.source,
         spottedAt: row.spotted_at,
+        starred: row.starred || false,
     };
 }
 
@@ -249,6 +250,22 @@ app.delete('/api/spots/:id', requireAuth, async (req, res) => {
     res.json({ success: true });
 });
 
+app.patch('/api/spots/:id/star', requireAuth, async (req, res) => {
+    try {
+        const spotId = req.params.id;
+        const userId = req.user.user_id;
+        const [spot] = await sql`SELECT id, starred FROM spots WHERE id = ${spotId} AND user_id = ${userId}`;
+        if (!spot) return res.status(404).json({ error: 'Spot not found' });
+        const newStarred = !spot.starred;
+        if (newStarred) {
+            const [countRow] = await sql`SELECT COUNT(*) as count FROM spots WHERE user_id = ${userId} AND starred = true`;
+            if (parseInt(countRow.count) >= 6) return res.status(400).json({ error: 'You can star up to 6 cars' });
+        }
+        await sql`UPDATE spots SET starred = ${newStarred} WHERE id = ${spotId}`;
+        res.json({ success: true, starred: newStarred });
+    } catch (err) { res.status(500).json({ error: 'Failed to toggle star' }); }
+});
+
 // ══════════════════════════════════════════════
 // WISHLIST
 // ══════════════════════════════════════════════
@@ -399,14 +416,20 @@ app.get('/api/public/profile/:username', async (req, res) => {
     try {
         const [user] = await sql`SELECT id, username, avatar, joined_at FROM users WHERE LOWER(username) = LOWER(${req.params.username})`;
         if (!user) return res.status(404).json({ error: 'User not found' });
-        const spots = await sql`SELECT * FROM spots WHERE user_id = ${user.id} ORDER BY car_rarity DESC LIMIT 6`;
+        const spots = await sql`SELECT * FROM spots WHERE user_id = ${user.id} ORDER BY starred DESC, car_rarity DESC`;
         const [countRow] = await sql`SELECT COUNT(*) as total FROM spots WHERE user_id = ${user.id}`;
         const [rarityRow] = await sql`SELECT COALESCE(SUM(car_rarity), 0) as total FROM spots WHERE user_id = ${user.id}`;
+        const [makesRow] = await sql`SELECT COUNT(DISTINCT car_make) as total FROM spots WHERE user_id = ${user.id}`;
+        const totalPoints = Math.round(parseFloat(rarityRow.total));
+        const formattedSpots = spots.map(formatSpot);
+        const rarestSpot = formattedSpots.length > 0 ? formattedSpots.reduce((a, b) => a.car.rarity > b.car.rarity ? a : b) : null;
         res.json({
             profile: {
                 username: user.username, avatar: user.avatar, joinedAt: user.joined_at,
-                totalSpots: parseInt(countRow.total), totalRarityPoints: Math.round(parseFloat(rarityRow.total)),
-                level: Math.floor(parseFloat(rarityRow.total) / 200) + 1, topSpots: spots.map(formatSpot),
+                totalSpots: parseInt(countRow.total), totalRarityPoints: totalPoints,
+                level: Math.floor(totalPoints / 200) + 1, uniqueMakes: parseInt(makesRow.total),
+                rarestFind: rarestSpot ? { name: `${rarestSpot.car.make} ${rarestSpot.car.model}`, rarity: rarestSpot.car.rarity } : null,
+                spots: formattedSpots,
             }
         });
     } catch (err) { res.status(500).json({ error: 'Failed to fetch profile' }); }

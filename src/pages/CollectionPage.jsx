@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getUserSpots, removeSpot } from '../services/carService';
+import { api } from '../services/apiClient';
 import { getEstimatedMSRP } from '../services/vehicleDataService';
 import CarCard from '../components/CarCard';
 import RarityBadge from '../components/RarityBadge';
@@ -88,6 +89,20 @@ export default function CollectionPage() {
         await removeSpot(user.id, spotId);
         setSpots(prev => prev.filter(s => s.id !== spotId));
         setSelectedSpot(null);
+    };
+
+    const handleToggleStar = async (spotId) => {
+        try {
+            const data = await api(`/api/spots/${spotId}/star`, { method: 'PATCH' });
+            if (data.success) {
+                setSpots(prev => prev.map(s =>
+                    s.id === spotId ? { ...s, starred: data.starred } : s
+                ));
+                setSelectedSpot(prev => prev ? { ...prev, starred: data.starred } : prev);
+            }
+        } catch (err) {
+            console.error('Star toggle error:', err);
+        }
     };
 
     // Format price for display
@@ -186,7 +201,18 @@ export default function CollectionPage() {
                             <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-sm)' }}>
                                 Spotted {new Date(selectedSpot.spottedAt).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                             </p>
-                            <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+                            <div style={{ display: 'flex', gap: '8px', marginTop: '16px', flexWrap: 'wrap' }}>
+                                <button
+                                    className="btn btn-sm"
+                                    onClick={() => handleToggleStar(selectedSpot.id)}
+                                    style={{
+                                        background: selectedSpot.starred ? 'var(--accent-gold, #f59e0b)' : 'var(--bg-tertiary)',
+                                        color: selectedSpot.starred ? '#000' : 'var(--text-secondary)',
+                                        border: '1px solid ' + (selectedSpot.starred ? 'var(--accent-gold)' : 'var(--border)'),
+                                    }}
+                                >
+                                    {selectedSpot.starred ? '⭐ Featured' : '☆ Feature'}
+                                </button>
                                 <ShareButton
                                     url={`${window.location.origin}/spot/${selectedSpot.id}`}
                                     text={`Check out this ${selectedSpot.car.make} ${selectedSpot.car.model} I spotted on CarCues!`}

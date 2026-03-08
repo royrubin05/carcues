@@ -14,7 +14,7 @@ import LeaderboardPage from './pages/LeaderboardPage';
 import AdminPage from './pages/AdminPage';
 import HowItWorksPage from './pages/HowItWorksPage';
 import PublicSpotPage from './pages/PublicSpotPage';
-import PublicProfilePage from './pages/PublicProfilePage';
+import ShowcasePage from './pages/ShowcasePage';
 import SpotOfTheDayPage from './pages/SpotOfTheDayPage';
 
 export default function App() {
@@ -24,7 +24,7 @@ export default function App() {
                 <Routes>
                     {/* Public pages (no login required) */}
                     <Route path="/spot/:id" element={<PublicSpotPage />} />
-                    <Route path="/u/:username" element={<PublicProfilePage />} />
+                    <Route path="/u/:username" element={<ShowcasePage />} />
                     <Route path="/spot-of-the-day" element={<SpotOfTheDayPage />} />
 
                     {/* Auth pages */}
