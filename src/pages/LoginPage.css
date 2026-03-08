@@ -1,0 +1,211 @@
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.login-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+.login-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+}
+
+.login-glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.4;
+}
+
+.login-glow-1 {
+    width: 500px;
+    height: 500px;
+    background: var(--accent-blue);
+    top: -200px;
+    right: -100px;
+    animation: float 8s ease-in-out infinite;
+}
+
+.login-glow-2 {
+    width: 400px;
+    height: 400px;
+    background: var(--accent-orange);
+    bottom: -150px;
+    left: -100px;
+    animation: float 6s ease-in-out infinite reverse;
+}
+
+.login-container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 420px;
+    padding: var(--space-2xl);
+    background: var(--bg-glass-strong);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    margin: var(--space-lg);
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: var(--space-xl);
+}
+
+.login-logo {
+    font-size: 4rem;
+    margin-bottom: var(--space-md);
+    animation: float 3s ease-in-out infinite;
+}
+
+.login-title {
+    font-size: var(--font-4xl);
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-orange) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.1;
+}
+
+.login-subtitle {
+    color: var(--text-secondary);
+    margin-top: var(--space-sm);
+    font-size: var(--font-md);
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.form-group label {
+    font-size: var(--font-sm);
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.login-error {
+    padding: 10px 14px;
+    background: var(--accent-red-dim);
+    border: 1px solid rgba(255, 23, 68, 0.3);
+    border-radius: var(--radius-md);
+    color: var(--accent-red);
+    font-size: var(--font-sm);
+    text-align: center;
+}
+
+.login-btn {
+    width: 100%;
+    padding: 14px;
+    font-size: var(--font-md);
+    font-weight: 700;
+    margin-top: var(--space-sm);
+}
+
+.login-demo-hint {
+    padding: var(--space-md);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    text-align: center;
+}
+
+.login-demo-hint p {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    margin-bottom: var(--space-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.demo-btn {
+    display: block;
+    width: 100%;
+    padding: 8px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: var(--font-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    margin-bottom: var(--space-xs);
+}
+
+.demo-btn:hover {
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
+    border-color: var(--accent-blue);
+}
+
+.login-toggle {
+    text-align: center;
+    margin-top: var(--space-md);
+}
+
+.login-toggle a {
+    color: var(--text-secondary);
+    font-size: var(--font-sm);
+}
+
+.login-toggle a:hover {
+    color: var(--accent-blue);
+}
+
+.input-hint {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.forgot-password-link {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    text-align: right;
+    margin-top: 4px;
+    transition: color var(--transition-fast);
+}
+
+.forgot-password-link:hover {
+    color: var(--accent-blue);
+}
+
+.forgot-success {
+    text-align: center;
+    padding: var(--space-xl) var(--space-md);
+}
+
+.forgot-success-icon {
+    font-size: 3rem;
+    margin-bottom: var(--space-md);
+}
+
+.forgot-success p {
+    color: var(--text-secondary);
+    font-size: var(--font-sm);
+    line-height: 1.6;
+}

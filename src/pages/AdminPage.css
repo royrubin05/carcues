@@ -1,0 +1,378 @@
+.admin-table-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.admin-table-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-lg);
+    gap: var(--space-md);
+    flex-wrap: wrap;
+}
+
+.admin-table-toolbar .section-title {
+    margin: 0;
+    white-space: nowrap;
+}
+
+.admin-search {
+    max-width: 280px;
+    padding: 10px 14px;
+    font-size: var(--font-sm);
+}
+
+.admin-table-header {
+    display: grid;
+    grid-template-columns: 2fr 90px 70px 70px 90px 70px 110px 70px;
+    padding: var(--space-md) var(--space-lg);
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.admin-table-row {
+    display: grid;
+    grid-template-columns: 2fr 90px 70px 70px 90px 70px 110px 70px;
+    padding: var(--space-md) var(--space-lg);
+    border-bottom: 1px solid var(--border-subtle);
+    align-items: center;
+    font-size: var(--font-sm);
+    transition: background var(--transition-fast);
+}
+
+.admin-table-row:last-child {
+    border-bottom: none;
+}
+
+.admin-table-row:hover {
+    background: var(--bg-card-hover);
+}
+
+.admin-user-cell {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.admin-avatar {
+    font-size: 1.5rem;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-full);
+    flex-shrink: 0;
+}
+
+.admin-username {
+    font-weight: 600;
+    display: block;
+}
+
+.admin-email {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    display: block;
+}
+
+.role-badge {
+    font-size: var(--font-xs);
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+}
+
+.role-badge.admin {
+    background: var(--accent-gold-dim);
+    color: var(--accent-gold);
+}
+
+.role-badge.user {
+    background: var(--accent-blue-dim);
+    color: var(--accent-blue);
+}
+
+.admin-stat {
+    text-align: center;
+    font-weight: 500;
+}
+
+.admin-stat.points {
+    color: var(--accent-gold);
+    font-weight: 700;
+}
+
+.admin-stat.level {
+    color: var(--accent-blue);
+    font-weight: 700;
+}
+
+.admin-date {
+    font-size: var(--font-xs);
+    color: var(--text-secondary);
+}
+
+.admin-actions {
+    text-align: center;
+}
+
+.admin-action-btn {
+    font-size: 1.1rem;
+    padding: 6px 10px;
+    min-height: 32px;
+}
+
+.admin-action-btn:hover {
+    background: var(--accent-blue-dim);
+}
+
+.admin-empty {
+    padding: var(--space-xl);
+    text-align: center;
+    color: var(--text-muted);
+    font-size: var(--font-sm);
+}
+
+/* Pagination */
+.admin-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+    border-top: 1px solid var(--border-subtle);
+}
+
+.admin-page-numbers {
+    display: flex;
+    gap: 4px;
+}
+
+.admin-page-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-sm);
+    font-weight: 600;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border: 1px solid transparent;
+}
+
+.admin-page-btn:hover {
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
+}
+
+.admin-page-btn.active {
+    background: var(--accent-blue-dim);
+    color: var(--accent-blue);
+    border-color: var(--accent-blue);
+}
+
+/* Toast */
+.admin-toast {
+    padding: 12px 20px;
+    background: var(--accent-green-dim);
+    border: 1px solid rgba(0, 230, 118, 0.3);
+    border-radius: var(--radius-md);
+    color: var(--accent-green);
+    font-size: var(--font-sm);
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: var(--space-lg);
+}
+
+/* Modal */
+.admin-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: var(--space-lg);
+}
+
+.admin-modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    width: 100%;
+    max-width: 420px;
+    box-shadow: var(--shadow-lg);
+}
+
+.admin-modal h3 {
+    font-size: var(--font-xl);
+    margin-bottom: var(--space-lg);
+}
+
+.admin-modal-user {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-md);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-lg);
+    font-size: var(--font-sm);
+}
+
+.admin-modal-user span {
+    color: var(--text-muted);
+    font-size: var(--font-xs);
+    margin-left: auto;
+}
+
+.admin-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-sm);
+    margin-top: var(--space-lg);
+}
+
+.admin-modal-actions .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Tab Navigation */
+.admin-tabs {
+    display: flex;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-xl);
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xs);
+}
+
+.admin-tab {
+    flex: 1;
+    padding: 12px 20px;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    background: transparent;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+}
+
+.admin-tab:hover {
+    color: var(--text-primary);
+    background: var(--bg-card-hover);
+}
+
+.admin-tab.active {
+    color: var(--accent-blue);
+    background: var(--accent-blue-dim);
+}
+
+/* Audit Table */
+.audit-table-header {
+    display: grid;
+    grid-template-columns: 120px 1.5fr 1.5fr 80px 100px;
+    padding: var(--space-md) var(--space-lg);
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.audit-table-row {
+    display: grid;
+    grid-template-columns: 120px 1.5fr 1.5fr 80px 100px;
+    padding: var(--space-md) var(--space-lg);
+    border-bottom: 1px solid var(--border-subtle);
+    align-items: center;
+    font-size: var(--font-sm);
+    transition: background var(--transition-fast);
+}
+
+.audit-table-row:last-child {
+    border-bottom: none;
+}
+
+.audit-table-row:hover {
+    background: var(--bg-card-hover);
+}
+
+.audit-table-row.overridden {
+    border-left: 3px solid var(--accent-orange);
+}
+
+.audit-table-row.accurate {
+    border-left: 3px solid var(--accent-green);
+}
+
+/* Mobile-first base */
+.admin-table-header,
+.admin-table-row {
+    grid-template-columns: 1.5fr 80px 60px 60px 80px 60px;
+}
+
+.admin-table-header> :nth-child(7),
+.admin-table-header> :nth-child(8),
+.admin-table-row> :nth-child(7),
+.admin-table-row> :nth-child(8) {
+    display: none;
+}
+
+.admin-table-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.admin-search {
+    max-width: 100%;
+}
+
+@media (min-width: 901px) {
+
+    .admin-table-header,
+    .admin-table-row {
+        grid-template-columns: 2fr 90px 70px 70px 90px 70px 110px 70px;
+    }
+
+    .admin-table-header> :nth-child(7),
+    .admin-table-header> :nth-child(8),
+    .admin-table-row> :nth-child(7),
+    .admin-table-row> :nth-child(8) {
+        display: block;
+    }
+
+    .admin-table-toolbar {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .admin-search {
+        max-width: 280px;
+    }
+}

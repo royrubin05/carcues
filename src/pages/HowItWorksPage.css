@@ -1,0 +1,374 @@
+/* ═══════════════════════════════════════════
+   How It Works Page — Gamification Guide
+   ═══════════════════════════════════════════ */
+
+.how-it-works-page {
+    padding: 24px;
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+/* ── Section Layout ── */
+.guide-section {
+    margin-bottom: 40px;
+}
+
+.section-title {
+    font-size: var(--font-xl);
+    font-weight: 800;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.section-desc {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+/* ── Guide Card ── */
+.guide-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-xl);
+    padding: 28px;
+    backdrop-filter: blur(20px);
+}
+
+.highlight-card {
+    border-left: 4px solid var(--accent-primary);
+}
+
+.highlight-card h2 {
+    font-size: var(--font-xl);
+    margin-bottom: 12px;
+}
+
+.highlight-card p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    font-size: var(--font-md);
+}
+
+/* ── Steps Grid ── */
+.steps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.step-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.step-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.step-number {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-xl);
+    font-weight: 900;
+    margin: 0 auto 16px;
+}
+
+.step-card h3 {
+    margin-bottom: 8px;
+    font-size: var(--font-md);
+}
+
+.step-card p {
+    color: var(--text-secondary);
+    font-size: var(--font-sm);
+    line-height: 1.5;
+}
+
+/* ── Scoring Grid ── */
+.scoring-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+.scoring-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+}
+
+.scoring-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+}
+
+.scoring-card h3 {
+    margin-bottom: 4px;
+    font-size: var(--font-lg);
+}
+
+.scoring-range {
+    color: var(--accent-primary);
+    font-weight: 700;
+    font-size: var(--font-sm);
+    margin-bottom: 16px;
+}
+
+.scoring-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.scoring-card li {
+    padding: 6px 0;
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.scoring-card li:last-child {
+    border-bottom: none;
+}
+
+.tier-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+.tier-dot.mythic {
+    background: var(--rarity-mythic);
+}
+
+.tier-dot.legendary {
+    background: var(--rarity-legendary);
+}
+
+.tier-dot.epic {
+    background: var(--rarity-epic);
+}
+
+.tier-dot.rare {
+    background: var(--rarity-rare);
+}
+
+.tier-dot.uncommon {
+    background: var(--rarity-uncommon);
+}
+
+.tier-dot.common {
+    background: var(--rarity-common);
+}
+
+.tag {
+    display: inline-block;
+    background: var(--rarity-mythic);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 700;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+/* ── Tiers Table ── */
+.tiers-table-container {
+    overflow-x: auto;
+}
+
+.tiers-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.tiers-table th {
+    background: rgba(255, 255, 255, 0.06);
+    padding: 14px 16px;
+    text-align: left;
+    font-size: var(--font-sm);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+}
+
+.tiers-table td {
+    padding: 14px 16px;
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.tier-row:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.tier-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.mythic-badge {
+    background: rgba(255, 50, 50, 0.15);
+    color: var(--rarity-mythic);
+}
+
+.legendary-badge {
+    background: rgba(255, 200, 50, 0.15);
+    color: var(--rarity-legendary);
+}
+
+.epic-badge {
+    background: rgba(160, 90, 255, 0.15);
+    color: var(--rarity-epic);
+}
+
+.rare-badge {
+    background: rgba(60, 140, 255, 0.15);
+    color: var(--rarity-rare);
+}
+
+.uncommon-badge {
+    background: rgba(60, 210, 120, 0.15);
+    color: var(--rarity-uncommon);
+}
+
+.common-badge {
+    background: rgba(180, 180, 180, 0.15);
+    color: var(--rarity-common);
+}
+
+/* ── Level Info Grid ── */
+.level-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.level-info-card {
+    text-align: center;
+    padding: 20px;
+}
+
+.level-icon {
+    font-size: 36px;
+    margin-bottom: 12px;
+}
+
+.level-info-card h3 {
+    margin-bottom: 8px;
+}
+
+.level-info-card p {
+    color: var(--text-secondary);
+    font-size: var(--font-sm);
+    line-height: 1.5;
+}
+
+/* ── Tips Grid ── */
+.tips-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.tip-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.tip-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent-primary);
+}
+
+.tip-icon {
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.tip-card h3 {
+    font-size: var(--font-md);
+    margin-bottom: 6px;
+}
+
+.tip-card p {
+    color: var(--text-secondary);
+    font-size: var(--font-sm);
+    line-height: 1.5;
+}
+
+/* ── Responsive (mobile-first) ── */
+.how-it-works-page {
+    padding: 16px;
+}
+
+.scoring-grid,
+.steps-grid,
+.tips-grid,
+.level-info-grid {
+    grid-template-columns: 1fr;
+}
+
+.tiers-table td,
+.tiers-table th {
+    padding: 10px 12px;
+    font-size: 12px;
+}
+
+@media (min-width: 769px) {
+    .how-it-works-page {
+        padding: 24px;
+    }
+
+    .scoring-grid {
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+
+    .steps-grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .tips-grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .level-info-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+
+    .tiers-table td,
+    .tiers-table th {
+        padding: 14px 16px;
+        font-size: var(--font-sm);
+    }
+}

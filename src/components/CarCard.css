@@ -1,0 +1,116 @@
+.car-card {
+    position: relative;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    animation: fadeInUp 0.5s ease forwards;
+    opacity: 0;
+}
+
+.car-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    border-color: var(--rarity-color, var(--border-glow));
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), 0 0 20px color-mix(in srgb, var(--rarity-color) 30%, transparent);
+}
+
+.car-card-image {
+    position: relative;
+    height: 180px;
+    overflow: hidden;
+}
+
+.car-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--transition-slow);
+}
+
+.car-card:hover .car-card-image img {
+    transform: scale(1.1);
+}
+
+.car-card-rarity {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    font-size: var(--font-xs);
+    font-weight: 700;
+    color: var(--bg-primary);
+}
+
+.car-card-tier {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-size: var(--font-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+.car-card-body {
+    padding: var(--space-md);
+}
+
+.car-card-title {
+    font-size: var(--font-md);
+    font-weight: 700;
+    margin-bottom: var(--space-xs);
+    line-height: 1.3;
+}
+
+.car-card-meta {
+    display: flex;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-sm);
+}
+
+.car-card-year {
+    font-size: var(--font-xs);
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+}
+
+.car-card-category {
+    font-size: var(--font-xs);
+    color: var(--accent-blue);
+    background: var(--accent-blue-dim);
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+}
+
+.car-card-location {
+    font-size: var(--font-xs);
+    color: var(--text-secondary);
+    margin-bottom: 2px;
+}
+
+.car-card-date {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+}
+
+.car-card-glow {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-lg);
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+    background: radial-gradient(circle at center,
+            color-mix(in srgb, var(--rarity-color) 10%, transparent),
+            transparent 70%);
+    pointer-events: none;
+}
+
+.car-card:hover .car-card-glow {
+    opacity: 1;
+}

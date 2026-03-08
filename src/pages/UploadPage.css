@@ -1,0 +1,288 @@
+.upload-zone {
+    border: 2px dashed var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: var(--space-3xl);
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    background: var(--bg-card);
+}
+
+.upload-zone:hover,
+.upload-zone.drag-active {
+    border-color: var(--accent-blue);
+    background: var(--accent-blue-dim);
+    box-shadow: var(--shadow-glow-blue);
+}
+
+.upload-zone-content {
+    pointer-events: none;
+}
+
+.upload-icon {
+    font-size: 4rem;
+    margin-bottom: var(--space-lg);
+    animation: float 3s ease-in-out infinite;
+}
+
+.upload-zone h3 {
+    font-size: var(--font-xl);
+    font-weight: 700;
+    margin-bottom: var(--space-sm);
+}
+
+.upload-zone p {
+    color: var(--text-secondary);
+}
+
+.upload-hint {
+    font-size: var(--font-xs) !important;
+    color: var(--text-muted) !important;
+    margin-top: var(--space-md);
+}
+
+/* Preview */
+.upload-preview-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+    align-items: start;
+}
+
+@media (min-width: 901px) {
+    .upload-preview-container {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.upload-preview {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.preview-image-wrapper {
+    position: relative;
+    overflow: hidden;
+}
+
+.preview-image {
+    width: 100%;
+    height: 350px;
+    object-fit: cover;
+}
+
+.preview-actions {
+    padding: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+/* Scanning Overlay */
+.scan-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.scan-line {
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: var(--accent-blue);
+    box-shadow: 0 0 10px var(--accent-blue), 0 0 30px var(--accent-blue);
+    animation: scanLine 2s linear infinite;
+}
+
+.scan-corners {
+    position: absolute;
+    inset: 20px;
+}
+
+.scan-corner {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border-color: var(--accent-blue);
+    border-style: solid;
+    border-width: 0;
+}
+
+.scan-corner.tl {
+    top: 0;
+    left: 0;
+    border-top-width: 3px;
+    border-left-width: 3px;
+}
+
+.scan-corner.tr {
+    top: 0;
+    right: 0;
+    border-top-width: 3px;
+    border-right-width: 3px;
+}
+
+.scan-corner.bl {
+    bottom: 0;
+    left: 0;
+    border-bottom-width: 3px;
+    border-left-width: 3px;
+}
+
+.scan-corner.br {
+    bottom: 0;
+    right: 0;
+    border-bottom-width: 3px;
+    border-right-width: 3px;
+}
+
+.scan-text {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    color: var(--accent-blue);
+    font-weight: 700;
+    font-size: var(--font-lg);
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+.scan-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid transparent;
+    border-top-color: var(--accent-blue);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* Analysis Result */
+.analysis-result {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xl);
+}
+
+.result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.result-header h2 {
+    font-size: var(--font-xl);
+    font-weight: 700;
+}
+
+.result-confidence {
+    font-size: var(--font-sm);
+    color: var(--accent-green);
+    background: var(--accent-green-dim);
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+}
+
+.result-car-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-lg);
+    flex-wrap: wrap;
+    gap: var(--space-md);
+}
+
+.result-car-name h3 {
+    font-size: var(--font-2xl);
+    font-weight: 800;
+}
+
+.result-year {
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+}
+
+.result-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-sm) 0;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.detail-label {
+    color: var(--text-secondary);
+    font-size: var(--font-sm);
+}
+
+.detail-value {
+    font-weight: 600;
+}
+
+/* Rarity Meter */
+.rarity-meter {
+    margin-bottom: var(--space-xl);
+}
+
+.rarity-meter-label {
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-sm);
+}
+
+.rarity-meter-bar {
+    height: 12px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-bottom: var(--space-xs);
+}
+
+.rarity-meter-fill {
+    height: 100%;
+    border-radius: var(--radius-full);
+    transition: width 1.5s ease;
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+}
+
+.rarity-meter-scale {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+}
+
+.result-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.saved-message {
+    text-align: center;
+    padding: 14px;
+    background: var(--accent-green-dim);
+    border: 1px solid rgba(0, 230, 118, 0.3);
+    border-radius: var(--radius-md);
+    color: var(--accent-green);
+    font-weight: 700;
+    animation: fadeInUp 0.3s ease;
+}
