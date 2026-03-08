@@ -89,10 +89,8 @@ app.post('/api/auth/register', async (req, res) => {
             VALUES (${username}, ${email}, 'user', ${avatar}, ${simpleHash(password)}, false)
             RETURNING id, username, email, role, avatar, joined_at, email_verified
         `;
-        const token = generateToken();
-        await sql`INSERT INTO sessions (id, user_id) VALUES (${token}, ${user.id})`;
 
-        // Generate verification token & send email (fire-and-forget)
+        // Generate verification token & send email
         const verifyToken = crypto.randomBytes(32).toString('hex');
         await sql`INSERT INTO email_verification_tokens (user_id, token) VALUES (${user.id}, ${verifyToken})`;
         const baseUrl = `${req.protocol}://${req.get('host')}`;
@@ -111,7 +109,8 @@ app.post('/api/auth/register', async (req, res) => {
                 html: `<div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:32px;background:#0f0f1a;color:#e0e0e8;border-radius:16px;"><h1 style="color:#0ea5e9;">CarCues</h1><p>New user registered:</p><div style="background:#1a1a2e;padding:20px;border-radius:12px;"><p><strong>Username:</strong> ${user.username}</p><p><strong>Email:</strong> ${user.email}</p><p><strong>Avatar:</strong> ${user.avatar}</p></div></div>`
             }).catch(() => { });
         }
-        res.json({ success: true, user, token });
+        // Do NOT create session — user must verify email first
+        res.json({ success: true, needsVerification: true, message: 'Account created! Please check your email to verify your account.' });
     } catch (err) { console.error('Register error:', err); res.status(500).json({ error: 'Registration failed' }); }
 });
 
@@ -123,6 +122,7 @@ app.post('/api/auth/login', async (req, res) => {
         if (users.length === 0) return res.status(401).json({ error: 'No account found with that username' });
         const user = users[0];
         if (user.password_hash !== simpleHash(password)) return res.status(401).json({ error: 'Incorrect password' });
+        if (!user.email_verified) return res.status(403).json({ error: 'Please verify your email before logging in. Check your inbox for a verification link.', needsVerification: true });
         const token = generateToken();
         await sql`INSERT INTO sessions (id, user_id) VALUES (${token}, ${user.id})`;
         const { password_hash, ...safeUser } = user;

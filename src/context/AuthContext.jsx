@@ -40,6 +40,9 @@ export function AuthProvider({ children }) {
                 method: 'POST',
                 body: JSON.stringify({ username, email, password }),
             });
+            if (data.needsVerification) {
+                return { success: true, needsVerification: true, message: data.message };
+            }
             setToken(data.token);
             setUser(data.user);
             return { success: true, user: data.user };

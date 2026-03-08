@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './LoginPage.css';
 
@@ -9,8 +9,8 @@ export default function RegisterPage() {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
+    const [checkEmail, setCheckEmail] = useState(false);
     const { register } = useAuth();
-    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -27,12 +27,42 @@ export default function RegisterPage() {
         }
 
         const result = await register(username, email, password);
-        if (result.success) {
-            navigate('/');
+        if (result.success && result.needsVerification) {
+            setCheckEmail(true);
+        } else if (result.success) {
+            window.location.href = '/';
         } else {
             setError(result.error);
         }
     };
+
+    if (checkEmail) {
+        return (
+            <div className="login-page">
+                <div className="login-bg">
+                    <div className="login-grid" />
+                    <div className="login-glow login-glow-1" />
+                    <div className="login-glow login-glow-2" />
+                </div>
+                <div className="login-container animate-fade-in-up" style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📧</div>
+                    <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px', fontSize: '1.5rem' }}>Check Your Email</h2>
+                    <p style={{ color: 'var(--text-secondary)', marginBottom: '8px', lineHeight: 1.6 }}>
+                        We sent a verification link to
+                    </p>
+                    <p style={{ color: 'var(--accent-blue)', fontWeight: 600, marginBottom: '20px', fontSize: '1.05rem' }}>
+                        {email}
+                    </p>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '24px' }}>
+                        Click the link in your email to verify your account, then come back and log in.
+                    </p>
+                    <Link to="/login" className="btn btn-primary login-btn" style={{ display: 'inline-block', textDecoration: 'none' }}>
+                        Go to Login
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="login-page">

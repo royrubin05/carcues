@@ -77,11 +77,7 @@ app.post('/api/auth/register', async (req, res) => {
             RETURNING id, username, email, role, avatar, joined_at, email_verified
         `;
 
-        // Create session
-        const token = generateToken();
-        await sql`INSERT INTO sessions (id, user_id) VALUES (${token}, ${user.id})`;
-
-        // Generate verification token & send email (fire-and-forget)
+        // Generate verification token & send email
         const verifyToken = crypto.randomBytes(32).toString('hex');
         await sql`INSERT INTO email_verification_tokens (user_id, token) VALUES (${user.id}, ${verifyToken})`;
         const baseUrl = `${req.protocol}://${req.get('host')}`;
@@ -90,7 +86,8 @@ app.post('/api/auth/register', async (req, res) => {
         // Notify admin of new registration (fire-and-forget)
         sendNewUserNotification(user).catch(() => { });
 
-        res.json({ success: true, user, token });
+        // Do NOT create session — user must verify email first
+        res.json({ success: true, needsVerification: true, message: 'Account created! Please check your email to verify your account.' });
     } catch (err) {
         console.error('Register error:', err);
         res.status(500).json({ error: 'Registration failed' });
@@ -111,6 +108,11 @@ app.post('/api/auth/login', async (req, res) => {
         const user = users[0];
         if (user.password_hash !== simpleHash(password)) {
             return res.status(401).json({ error: 'Incorrect password' });
+        }
+
+        // Block unverified users
+        if (!user.email_verified) {
+            return res.status(403).json({ error: 'Please verify your email before logging in. Check your inbox for a verification link.', needsVerification: true });
         }
 
         // Create session
