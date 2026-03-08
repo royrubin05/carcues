@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getRarityTier } from '../data/mockData';
 import RarityBadge from '../components/RarityBadge';
 import ShareButton from '../components/ShareButton';
@@ -73,8 +73,19 @@ export default function PublicSpotPage() {
 }
 
 function PublicNav() {
+    const navigate = useNavigate();
+    const handleBack = () => {
+        if (window.history.length > 1) navigate(-1);
+        else navigate('/');
+    };
     return (
         <nav className="public-nav">
+            <button onClick={handleBack} style={{
+                background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '10px', padding: '8px 16px', color: 'var(--text-secondary)',
+                fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
+                transition: 'background 0.2s', WebkitTapHighlightColor: 'transparent',
+            }}>← Back</button>
             <Link to="/" className="public-nav-logo">
                 <img src="/logo.jpg" alt="CarCues" />
             </Link>
