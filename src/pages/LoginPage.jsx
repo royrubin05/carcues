@@ -10,7 +10,7 @@ export default function LoginPage() {
     const { login } = useAuth();
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
 
@@ -23,7 +23,7 @@ export default function LoginPage() {
             return;
         }
 
-        const result = login(username, password);
+        const result = await login(username, password);
         if (result.success) {
             navigate('/');
         } else {
@@ -41,8 +41,7 @@ export default function LoginPage() {
 
             <div className="login-container animate-fade-in-up">
                 <div className="login-header">
-                    <div className="login-logo">🏎️</div>
-                    <h1 className="login-title">CarCues</h1>
+                    <img src="/logo.jpg" alt="CarCues" className="login-logo-img" />
                     <p className="login-subtitle">Welcome back, spotter.</p>
                 </div>
 
@@ -82,23 +81,8 @@ export default function LoginPage() {
                         🏁 Sign In
                     </button>
 
-                    <div className="login-demo-hint">
-                        <p>Demo accounts:</p>
-                        <button
-                            type="button"
-                            className="demo-btn"
-                            onClick={() => { setUsername('SpeedDemon'); setPassword('demo'); }}
-                        >
-                            🏎️ SpeedDemon (User)
-                        </button>
-                        <button
-                            type="button"
-                            className="demo-btn"
-                            onClick={() => { setUsername('AdminUser'); setPassword('admin'); }}
-                        >
-                            👑 Admin
-                        </button>
-                    </div>
+
+
                 </form>
 
                 <div className="login-toggle">

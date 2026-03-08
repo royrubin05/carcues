@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getUserSpots, removeSpot } from '../services/carService';
 import { getEstimatedMSRP } from '../services/vehicleDataService';
@@ -8,11 +8,19 @@ import './CollectionPage.css';
 
 export default function CollectionPage() {
     const { user } = useAuth();
-    const [spots, setSpots] = useState(() => getUserSpots(user.id));
+    const [spots, setSpots] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [sortBy, setSortBy] = useState('date');
     const [filterRarity, setFilterRarity] = useState('all');
     const [selectedSpot, setSelectedSpot] = useState(null);
+
+    useEffect(() => {
+        getUserSpots(user.id)
+            .then(data => setSpots(data))
+            .catch(err => console.error('Failed to load spots:', err))
+            .finally(() => setLoading(false));
+    }, [user.id]);
 
     const filteredSpots = useMemo(() => {
         let result = [...spots];
@@ -75,8 +83,8 @@ export default function CollectionPage() {
         return result;
     }, [spots, search, sortBy, filterRarity]);
 
-    const handleDelete = (spotId) => {
-        removeSpot(user.id, spotId);
+    const handleDelete = async (spotId) => {
+        await removeSpot(user.id, spotId);
         setSpots(prev => prev.filter(s => s.id !== spotId));
         setSelectedSpot(null);
     };

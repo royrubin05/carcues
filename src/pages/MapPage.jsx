@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -36,7 +36,15 @@ function createColoredIcon(color) {
 
 export default function MapPage() {
     const { user } = useAuth();
-    const spots = useMemo(() => getUserSpots(user.id), [user.id]);
+    const [spots, setSpots] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        getUserSpots(user.id)
+            .then(data => setSpots(data))
+            .catch(err => console.error('Failed to load spots:', err))
+            .finally(() => setLoading(false));
+    }, [user.id]);
 
     const validSpots = spots.filter(s => s.location?.lat && s.location?.lng);
 

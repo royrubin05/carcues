@@ -31,10 +31,12 @@
     gap: var(--space-md);
 }
 
-.logo-icon {
-    font-size: 2rem;
-    animation: float 3s ease-in-out infinite;
+.logo-image {
+    height: 160px;
+    width: auto;
+    object-fit: contain;
 }
+
 
 .logo-text {
     font-size: var(--font-xl);

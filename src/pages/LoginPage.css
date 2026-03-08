@@ -67,10 +67,11 @@
     margin-bottom: var(--space-xl);
 }
 
-.login-logo {
-    font-size: 4rem;
-    margin-bottom: var(--space-md);
-    animation: float 3s ease-in-out infinite;
+.login-logo-img {
+    height: 140px;
+    width: auto;
+    object-fit: contain;
+    margin-bottom: var(--space-lg);
 }
 
 .login-title {

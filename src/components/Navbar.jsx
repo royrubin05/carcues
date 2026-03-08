@@ -31,7 +31,7 @@ export default function Navbar() {
         <nav className="navbar">
             <div className="navbar-brand">
                 <div className="navbar-logo">
-                    <span className="logo-text">CarCues</span>
+                    <img src="/logo.jpg" alt="CarCues" className="logo-image" />
                 </div>
             </div>
 

@@ -1,33 +1,31 @@
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
+import { getLeaderboard } from '../services/carService';
 import StatsCard from '../components/StatsCard';
 import './LeaderboardPage.css';
 
 export default function LeaderboardPage() {
-    const leaderboard = useMemo(() => {
-        const users = JSON.parse(localStorage.getItem('carcues_users') || '[]');
-        const allSpots = JSON.parse(localStorage.getItem('carcues_spots') || '{}');
+    const [leaderboard, setLeaderboard] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-        return users
-            .filter(u => u.role !== 'admin')
-            .map(user => {
-                const spots = allSpots[user.id] || [];
-                const totalRarityPoints = spots.reduce((sum, s) => sum + (s.car?.rarity || 0), 0);
-                const rarestFind = spots.length > 0
-                    ? spots.reduce((r, s) => (s.car?.rarity || 0) > (r.car?.rarity || 0) ? s : r, spots[0])
-                    : null;
-                return {
-                    ...user,
-                    totalSpots: spots.length,
-                    totalRarityPoints,
-                    rarestFind,
-                    level: Math.floor(totalRarityPoints / 20) + 1,
-                };
-            })
-            .sort((a, b) => b.totalRarityPoints - a.totalRarityPoints);
+    useEffect(() => {
+        getLeaderboard()
+            .then(data => setLeaderboard(data))
+            .catch(err => console.error('Failed to load leaderboard:', err))
+            .finally(() => setLoading(false));
     }, []);
 
+    if (loading) {
+        return (
+            <div className="leaderboard-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+                <div style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
+                    <div style={{ fontSize: '2rem', marginBottom: '12px' }}>🏆</div>
+                    Loading leaderboard...
+                </div>
+            </div>
+        );
+    }
+
     const topThree = leaderboard.slice(0, 3);
-    const rest = leaderboard.slice(3);
 
     return (
         <div className="leaderboard-page">
@@ -98,7 +96,6 @@ export default function LeaderboardPage() {
                         <span className="spots-col">Spots</span>
                         <span className="points-col">Points</span>
                         <span className="level-col">Level</span>
-                        <span className="rarest-col">Rarest Find</span>
                     </div>
                     {leaderboard.map((user, index) => (
                         <div key={user.id} className={`rankings-row ${index < 3 ? 'top-three' : ''}`}>
@@ -114,13 +111,13 @@ export default function LeaderboardPage() {
                                 {user.totalRarityPoints}
                             </span>
                             <span className="level-col">LVL {user.level}</span>
-                            <span className="rarest-col">
-                                {user.rarestFind
-                                    ? `${user.rarestFind.car.make} ${user.rarestFind.car.model}`
-                                    : '—'}
-                            </span>
                         </div>
                     ))}
+                    {leaderboard.length === 0 && (
+                        <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+                            No spotters yet. Be the first!
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

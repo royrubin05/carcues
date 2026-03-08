@@ -1,11 +1,13 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getAuditLog, getAuditStats, clearAuditLog } from '../services/aiAuditService';
+import { getAuditData, clearAuditLog } from '../services/aiAuditService';
+import { api } from '../services/apiClient';
 import StatsCard from '../components/StatsCard';
 import './AdminPage.css';
 
 const USERS_PER_PAGE = 10;
+const AUDIT_PER_PAGE = 15;
 
 export default function AdminPage() {
     const { isAdmin, resetUserPassword } = useAuth();
@@ -17,40 +19,38 @@ export default function AdminPage() {
     const [resetMsg, setResetMsg] = useState('');
     const [auditPage, setAuditPage] = useState(1);
 
-    const data = useMemo(() => {
-        const users = JSON.parse(localStorage.getItem('carcues_users') || '[]');
-        const allSpots = JSON.parse(localStorage.getItem('carcues_spots') || '{}');
-        const allWishlists = JSON.parse(localStorage.getItem('carcues_wishlist') || '{}');
+    // API data state
+    const [users, setUsers] = useState([]);
+    const [platformStats, setPlatformStats] = useState({ totalUsers: 0, totalSpots: 0, totalWishlist: 0, totalPoints: 0 });
+    const [loading, setLoading] = useState(true);
 
-        const userStats = users.map(user => {
-            const spots = allSpots[user.id] || [];
-            const wishlist = allWishlists[user.id] || [];
-            const totalRarityPoints = spots.reduce((sum, s) => sum + (s.car?.rarity || 0), 0);
-            return {
-                ...user,
-                totalSpots: spots.length,
-                wishlistCount: wishlist.length,
-                totalRarityPoints,
-                level: Math.floor(totalRarityPoints / 20) + 1,
-            };
-        });
-
-        const totalSpots = userStats.reduce((s, u) => s + u.totalSpots, 0);
-        const totalWishlist = userStats.reduce((s, u) => s + u.wishlistCount, 0);
-        const totalPoints = userStats.reduce((s, u) => s + u.totalRarityPoints, 0);
-
-        return { users: userStats, totalSpots, totalWishlist, totalPoints };
-    }, []);
+    useEffect(() => {
+        async function loadAdminData() {
+            try {
+                const [usersData, statsData] = await Promise.all([
+                    api('/api/users'),
+                    api('/api/admin/stats'),
+                ]);
+                setUsers(usersData.users);
+                setPlatformStats(statsData);
+            } catch (err) {
+                console.error('Failed to load admin data:', err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        if (isAdmin) loadAdminData();
+    }, [isAdmin]);
 
     // Filter users by search
     const filteredUsers = useMemo(() => {
-        if (!search.trim()) return data.users;
+        if (!search.trim()) return users;
         const q = search.toLowerCase();
-        return data.users.filter(u =>
+        return users.filter(u =>
             u.username.toLowerCase().includes(q) ||
             u.email.toLowerCase().includes(q)
         );
-    }, [data.users, search]);
+    }, [users, search]);
 
     // Pagination
     const totalPages = Math.max(1, Math.ceil(filteredUsers.length / USERS_PER_PAGE));
@@ -60,9 +60,9 @@ export default function AdminPage() {
         currentPage * USERS_PER_PAGE
     );
 
-    const handleResetPassword = () => {
+    const handleResetPassword = async () => {
         if (!resetModal || !newPassword) return;
-        const result = resetUserPassword(resetModal.email, newPassword);
+        const result = await resetUserPassword(resetModal.id, newPassword);
         if (result.success) {
             setResetMsg(`Password reset for ${resetModal.username}`);
             setResetModal(null);
@@ -77,6 +77,17 @@ export default function AdminPage() {
         return <Navigate to="/" replace />;
     }
 
+    if (loading) {
+        return (
+            <div className="admin-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+                <div style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
+                    <div style={{ fontSize: '2rem', marginBottom: '12px' }}>👑</div>
+                    Loading admin dashboard...
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="admin-page">
             <div className="page-header">
@@ -86,10 +97,10 @@ export default function AdminPage() {
 
             {/* Platform Stats */}
             <div className="stats-grid">
-                <StatsCard icon="👥" label="Total Users" value={data.users.length} color="var(--accent-blue)" delay={0} />
-                <StatsCard icon="📸" label="Total Spots" value={data.totalSpots} color="var(--accent-green)" delay={1} />
-                <StatsCard icon="⭐" label="Total Wishlist Items" value={data.totalWishlist} color="var(--accent-orange)" delay={2} />
-                <StatsCard icon="🏆" label="Total Rarity Points" value={data.totalPoints} color="var(--accent-gold)" delay={3} />
+                <StatsCard icon="👥" label="Total Users" value={platformStats.totalUsers} color="var(--accent-blue)" delay={0} />
+                <StatsCard icon="📸" label="Total Spots" value={platformStats.totalSpots} color="var(--accent-green)" delay={1} />
+                <StatsCard icon="⭐" label="Total Wishlist Items" value={platformStats.totalWishlist} color="var(--accent-orange)" delay={2} />
+                <StatsCard icon="🏆" label="Total Rarity Points" value={platformStats.totalPoints} color="var(--accent-gold)" delay={3} />
             </div>
 
             {/* Tab Navigation */}
@@ -135,10 +146,6 @@ export default function AdminPage() {
                             <div className="admin-table-header">
                                 <span>User</span>
                                 <span>Role</span>
-                                <span>Spotted</span>
-                                <span>Wishlist</span>
-                                <span>Rarity Pts</span>
-                                <span>Level</span>
                                 <span>Joined</span>
                                 <span>Actions</span>
                             </div>
@@ -156,25 +163,23 @@ export default function AdminPage() {
                                             {user.role === 'admin' ? '👑 Admin' : '🏎️ User'}
                                         </span>
                                     </span>
-                                    <span className="admin-stat">{user.totalSpots}</span>
-                                    <span className="admin-stat">{user.wishlistCount}</span>
-                                    <span className="admin-stat points">{user.totalRarityPoints}</span>
-                                    <span className="admin-stat level">LVL {user.level}</span>
                                     <span className="admin-date">
-                                        {new Date(user.joinedAt).toLocaleDateString('en-US', {
+                                        {new Date(user.joined_at).toLocaleDateString('en-US', {
                                             month: 'short',
                                             day: 'numeric',
                                             year: 'numeric'
                                         })}
                                     </span>
                                     <span className="admin-actions">
-                                        <button
-                                            className="btn btn-sm btn-ghost admin-action-btn"
-                                            onClick={() => { setResetModal(user); setNewPassword(''); setResetMsg(''); }}
-                                            title="Reset password"
-                                        >
-                                            🔑
-                                        </button>
+                                        {user.role !== 'admin' && (
+                                            <button
+                                                className="btn btn-sm btn-ghost admin-action-btn"
+                                                onClick={() => { setResetModal(user); setNewPassword(''); setResetMsg(''); }}
+                                                title="Reset password"
+                                            >
+                                                🔑
+                                            </button>
+                                        )}
                                     </span>
                                 </div>
                             ))}
@@ -260,26 +265,36 @@ export default function AdminPage() {
     );
 }
 
-const AUDIT_PER_PAGE = 15;
-
 function AiPerformanceTab({ auditPage, setAuditPage }) {
-    const stats = getAuditStats();
-    const log = getAuditLog();
+    const [auditData, setAuditData] = useState({ log: [], stats: { total: 0, accurate: 0, overridden: 0, accuracyRate: 0, highConfTotal: 0, highConfAccurate: 0, highConfRate: 0, lowConfTotal: 0, lowConfAccurate: 0, lowConfRate: 0, topOverriddenMakes: [] } });
+    const [loading, setLoading] = useState(true);
     const [showClearConfirm, setShowClearConfirm] = useState(false);
 
+    useEffect(() => {
+        getAuditData()
+            .then(data => setAuditData(data))
+            .catch(err => console.error('Failed to load audit data:', err))
+            .finally(() => setLoading(false));
+    }, []);
+
+    const { log, stats } = auditData;
     const totalAuditPages = Math.max(1, Math.ceil(log.length / AUDIT_PER_PAGE));
     const currentAuditPage = Math.min(auditPage, totalAuditPages);
-    const sortedLog = [...log].reverse(); // newest first
-    const paginatedLog = sortedLog.slice(
+    const paginatedLog = log.slice(
         (currentAuditPage - 1) * AUDIT_PER_PAGE,
         currentAuditPage * AUDIT_PER_PAGE
     );
 
-    const handleClear = () => {
-        clearAuditLog();
+    const handleClear = async () => {
+        await clearAuditLog();
+        setAuditData({ log: [], stats: { ...auditData.stats, total: 0, accurate: 0, overridden: 0, accuracyRate: 0 } });
         setShowClearConfirm(false);
         setAuditPage(1);
     };
+
+    if (loading) {
+        return <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>Loading AI audit data...</div>;
+    }
 
     return (
         <div className="animate-fade-in-up">
@@ -337,7 +352,6 @@ function AiPerformanceTab({ auditPage, setAuditPage }) {
                     </div>
                 </div>
 
-                {/* Top overridden makes */}
                 {stats.topOverriddenMakes.length > 0 && (
                     <div style={{ padding: '0 var(--space-lg) var(--space-lg)' }}>
                         <div style={{ fontSize: 'var(--font-sm)', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '8px' }}>
@@ -453,7 +467,6 @@ function AiPerformanceTab({ auditPage, setAuditPage }) {
                     )}
                 </div>
 
-                {/* Pagination */}
                 {totalAuditPages > 1 && (
                     <div className="admin-pagination">
                         <button

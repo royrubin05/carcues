@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getUserWishlist, addToWishlist, removeFromWishlist, isOnWishlist, getUserSpots } from '../services/carService';
+import { getUserWishlist, addToWishlist, removeFromWishlist, getUserSpots } from '../services/carService';
 import { searchFullDatabase, getEstimatedMSRP, getCarImage } from '../services/vehicleDataService';
 import { getRarityTier } from '../data/mockData';
 import RarityBadge from '../components/RarityBadge';
@@ -8,10 +8,18 @@ import './WishlistPage.css';
 
 export default function WishlistPage() {
     const { user } = useAuth();
-    const [wishlist, setWishlist] = useState(() => getUserWishlist(user.id));
+    const [wishlist, setWishlist] = useState([]);
+    const [spots, setSpots] = useState([]);
     const [search, setSearch] = useState('');
     const [showSearch, setShowSearch] = useState(false);
-    const spots = useMemo(() => getUserSpots(user.id), [user.id]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        Promise.all([getUserWishlist(user.id), getUserSpots(user.id)])
+            .then(([wishData, spotsData]) => { setWishlist(wishData); setSpots(spotsData); })
+            .catch(err => console.error('Failed to load wishlist:', err))
+            .finally(() => setLoading(false));
+    }, [user.id]);
 
     const searchResults = useMemo(() => {
         if (!search) return [];
@@ -20,15 +28,16 @@ export default function WishlistPage() {
 
     const spottedCarIds = useMemo(() => new Set(spots.map(s => s.carId)), [spots]);
 
-    const handleAdd = (car) => {
-        addToWishlist(user.id, car);
-        setWishlist(getUserWishlist(user.id));
+    const handleAdd = async (car) => {
+        await addToWishlist(user.id, car);
+        const updated = await getUserWishlist(user.id);
+        setWishlist(updated);
         setSearch('');
     };
 
-    const handleRemove = (carId) => {
-        removeFromWishlist(user.id, carId);
-        setWishlist(getUserWishlist(user.id));
+    const handleRemove = async (carId) => {
+        await removeFromWishlist(user.id, carId);
+        setWishlist(prev => prev.filter(w => w.id !== carId));
     };
 
     return (

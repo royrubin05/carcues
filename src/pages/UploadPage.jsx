@@ -188,7 +188,7 @@ export default function UploadPage() {
 
     const isHighConfidence = result && result.confidence >= CONFIDENCE_THRESHOLD;
 
-    // Compress image to a small thumbnail for localStorage
+    // Compress image to a small thumbnail for storage
     const createThumbnail = (dataUrl, maxWidth = 600) => {
         return new Promise((resolve) => {
             const img = new Image();
@@ -246,7 +246,7 @@ export default function UploadPage() {
         };
 
         try {
-            addSpot(user.id, spot);
+            await addSpot(user.id, spot);
 
             // Log AI audit entry
             const aiPrediction = {
@@ -267,9 +267,8 @@ export default function UploadPage() {
                 aiPrediction.year !== userFinalData.year ||
                 aiPrediction.category !== userFinalData.category
             );
-            logAuditEntry({
+            await logAuditEntry({
                 userId: user.id,
-                timestamp: new Date().toISOString(),
                 aiPrediction,
                 userFinal: userFinalData,
                 confidence: result.confidence,
@@ -281,7 +280,7 @@ export default function UploadPage() {
             setError(null);
         } catch (err) {
             console.error('Save failed:', err);
-            setError('Failed to save — storage may be full. Try clearing old spots.');
+            setError('Failed to save spot. Please try again.');
         }
     };
 

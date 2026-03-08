@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getUserStats, getUserSpots } from '../services/carService';
 import StatsCard from '../components/StatsCard';
@@ -8,15 +9,43 @@ import './Dashboard.css';
 
 export default function Dashboard() {
     const { user, isAdmin } = useAuth();
+    const [stats, setStats] = useState(null);
+    const [recentSpots, setRecentSpots] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     // Admin users are redirected to the admin dashboard
     if (isAdmin) {
         return <Navigate to="/admin" replace />;
     }
 
-    const stats = getUserStats(user.id);
-    const spots = getUserSpots(user.id);
-    const recentSpots = spots.slice(0, 4);
+    useEffect(() => {
+        async function load() {
+            try {
+                const [statsData, spotsData] = await Promise.all([
+                    getUserStats(user.id),
+                    getUserSpots(user.id),
+                ]);
+                setStats(statsData);
+                setRecentSpots(spotsData.slice(0, 4));
+            } catch (err) {
+                console.error('Failed to load dashboard:', err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        load();
+    }, [user.id]);
+
+    if (loading || !stats) {
+        return (
+            <div className="dashboard" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+                <div style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
+                    <div style={{ fontSize: '2rem', marginBottom: '12px' }}>🏎️</div>
+                    Loading dashboard...
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="dashboard">
@@ -81,7 +110,9 @@ export default function Dashboard() {
                 <div className="dashboard-rarest animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
                     <h2 className="section-title">🏆 Your Rarest Find</h2>
                     <div className="rarest-card" style={{ '--rarity-color': getRarityTier(stats.rarestFind.car.rarity).color }}>
-                        <img src={stats.rarestFind.car.image} alt={stats.rarestFind.car.model} className="rarest-image" />
+                        {stats.rarestFind.car.image && (
+                            <img src={stats.rarestFind.car.image} alt={stats.rarestFind.car.model} className="rarest-image" />
+                        )}
                         <div className="rarest-info">
                             <h3>{stats.rarestFind.car.make} {stats.rarestFind.car.model}</h3>
                             <p className="rarest-tier" style={{ color: getRarityTier(stats.rarestFind.car.rarity).color }}>
@@ -105,6 +136,11 @@ export default function Dashboard() {
                     {recentSpots.map((spot, i) => (
                         <CarCard key={spot.id} spot={spot} delay={i} />
                     ))}
+                    {recentSpots.length === 0 && (
+                        <p style={{ color: 'var(--text-muted)', gridColumn: '1/-1', textAlign: 'center', padding: 'var(--space-xl)' }}>
+                            No spots yet! Upload a photo to start your collection.
+                        </p>
+                    )}
                 </div>
             </div>
         </div>

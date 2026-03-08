@@ -12,7 +12,7 @@ export default function RegisterPage() {
     const { register } = useAuth();
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
 
@@ -26,7 +26,7 @@ export default function RegisterPage() {
             return;
         }
 
-        const result = register(username, email, password);
+        const result = await register(username, email, password);
         if (result.success) {
             navigate('/');
         } else {
@@ -44,8 +44,7 @@ export default function RegisterPage() {
 
             <div className="login-container animate-fade-in-up">
                 <div className="login-header">
-                    <div className="login-logo">🏎️</div>
-                    <h1 className="login-title">CarCues</h1>
+                    <img src="/logo.jpg" alt="CarCues" className="login-logo-img" />
                     <p className="login-subtitle">Join the hunt. Spot rare cars.</p>
                 </div>
 
