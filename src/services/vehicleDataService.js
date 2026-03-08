@@ -1280,7 +1280,7 @@ export function getProductionCount(make, model) {
  * Scoring breakdown:
  *   Brand Tier:        15–60 base points
  *   Category Bonus:    0–15 points
- *   Production Volume: 0–30 points
+ *   Production Volume: 0–50 points  (heavily weighted — limited production rules)
  *   Clamp:             minimum 1, no maximum cap
  *
  * Target: Only ~2 cars in the world should be able to hit 100
@@ -1316,22 +1316,25 @@ export function calculateRarityFromDatabase(make, model, category) {
     else if (cat === 'electric') score += 2;
     else if (cat === 'luxury') score += 3;
 
-    // ──── Production number scoring (big impact) ────
+    // ──── Production number scoring (HEAVILY weighted) ────
+    // Production is the strongest signal of real-world rarity.
+    // A Ford GT with 1,350 units is genuinely rare regardless of brand.
     const produced = getProductionCount(make, model);
     if (produced !== null) {
-        if (produced <= 2) score += 30;         // One-off / pair (Aston Martin Victor, Rimac Concept S)
-        else if (produced <= 10) score += 25;   // Single digits (Bugatti Centodieci, Pagani Zonda Cinque)
-        else if (produced <= 25) score += 22;   // Ultra-exclusive (Koenigsegg Agera RS, McLaren Solus GT)
-        else if (produced <= 50) score += 20;   // Hyper-limited (Bugatti Divo, Lamborghini Centenario)
-        else if (produced <= 100) score += 18;  // Very limited (Pagani Huayra, Koenigsegg CC850)
-        else if (produced <= 250) score += 15;  // Limited edition (Rimac Nevera, LaFerrari Aperta)
-        else if (produced <= 500) score += 12;  // Low production (LaFerrari, Ferrari F50, McLaren P1)
-        else if (produced <= 1000) score += 9;  // Restricted (Porsche 918, McLaren 765LT)
-        else if (produced <= 2000) score += 7;  // Notable (Carrera GT, Ferrari F40, Countach)
-        else if (produced <= 5000) score += 5;  // Modest (Ford GT, Ferrari 488 Pista, Dodge Demon)
-        else if (produced <= 10000) score += 3; // Semi-limited (Testarossa, De Tomaso Pantera)
-        else if (produced <= 20000) score += 2; // Low volume (Honda NSX, R34 GT-R)
-        else score += 1;                         // Higher volume but still tracked
+        if (produced <= 2) score += 50;         // One-off / pair (Aston Martin Victor)
+        else if (produced <= 5) score += 45;    // Handful (Lamborghini Veneno = 5)
+        else if (produced <= 10) score += 40;   // Single digits (Bugatti Centodieci)
+        else if (produced <= 25) score += 35;   // Ultra-exclusive (McLaren Solus GT = 25)
+        else if (produced <= 50) score += 30;   // Hyper-limited (Lamborghini Centenario = 40)
+        else if (produced <= 100) score += 26;  // Very limited (Pagani Huayra = 100)
+        else if (produced <= 250) score += 22;  // Limited edition (Rimac Nevera = 150)
+        else if (produced <= 500) score += 18;  // Low production (LaFerrari = 499, McLaren P1 = 375)
+        else if (produced <= 1000) score += 15; // Restricted (Porsche 918 = 918, McLaren 765LT)
+        else if (produced <= 2000) score += 12; // Notable — Ford GT (1350), Carrera GT (1270)
+        else if (produced <= 5000) score += 9;  // Modest (Ford GT 1st gen = 4038, Ferrari 488 Pista)
+        else if (produced <= 10000) score += 6; // Semi-limited (Testarossa)
+        else if (produced <= 20000) score += 4; // Low volume (Honda NSX, R34 GT-R)
+        else score += 2;                        // Higher volume but still tracked
     }
 
     // Floor at 1, no ceiling
