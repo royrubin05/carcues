@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getRarityTier } from '../data/mockData';
 import ShareButton from '../components/ShareButton';
 import './ShowcasePage.css';
@@ -17,9 +17,18 @@ function getRarityTextColor(rarity) {
 
 export default function ShowcasePage() {
     const { username } = useParams();
+    const navigate = useNavigate();
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+
+    const handleBack = () => {
+        if (window.history.length > 1) {
+            navigate(-1);
+        } else {
+            navigate('/explore');
+        }
+    };
 
     useEffect(() => {
         async function load() {
@@ -80,6 +89,14 @@ export default function ShowcasePage() {
             </div>
 
             <div className="showcase-content">
+                {/* Back button */}
+                <button
+                    onClick={handleBack}
+                    className="showcase-back-btn"
+                >
+                    ← Back
+                </button>
+
                 {/* ── Hero ── */}
                 <div className="showcase-hero">
                     <div className="showcase-avatar">{profile.avatar}</div>

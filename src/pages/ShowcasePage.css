@@ -61,6 +61,28 @@
     padding: 24px 16px 80px;
 }
 
+.showcase-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 16px;
+    transition: background 0.2s;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.showcase-back-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
 /* ── Hero Section ── */
 .showcase-hero {
     text-align: center;
