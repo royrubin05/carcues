@@ -386,7 +386,12 @@ export default function AdminPage() {
                             onChange={(e) => setSpotSearch(e.target.value)}
                         />
                     </div>
-                    <div className="admin-user-list">
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+                        gap: '16px',
+                        marginTop: '12px',
+                    }}>
                         {allSpots
                             .filter(s => {
                                 if (!spotSearch) return true;
@@ -399,40 +404,64 @@ export default function AdminPage() {
                                 );
                             })
                             .map(spot => (
-                                <div key={spot.id} className="admin-user-row" style={{ gap: '12px' }}>
+                                <a
+                                    key={spot.id}
+                                    href={`/spot/${spot.id}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{
+                                        display: 'block',
+                                        background: 'var(--bg-tertiary)',
+                                        borderRadius: '12px',
+                                        overflow: 'hidden',
+                                        border: '1px solid var(--border)',
+                                        textDecoration: 'none',
+                                        color: 'inherit',
+                                        transition: 'transform 0.2s, box-shadow 0.2s',
+                                        cursor: 'pointer',
+                                    }}
+                                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.3)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}
+                                >
                                     {spot.car.image && (
                                         <img
                                             src={spot.car.image}
                                             alt={spot.car.model}
-                                            style={{ width: '56px', height: '42px', objectFit: 'cover', borderRadius: '8px', flexShrink: 0 }}
+                                            style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }}
                                         />
                                     )}
-                                    <span className="admin-user-info" style={{ flex: 1 }}>
-                                        <span className="admin-username" style={{ fontSize: '0.95rem' }}>
+                                    <div style={{ padding: '12px 14px' }}>
+                                        <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '4px' }}>
                                             {spot.car.make} {spot.car.model}
-                                        </span>
-                                        <span className="admin-email" style={{ fontSize: '0.8rem' }}>
+                                        </div>
+                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>
                                             {spot.spotter?.avatar} {spot.spotter?.username}
                                             {spot.location?.city && ` · 📍 ${spot.location.city}`}
-                                        </span>
-                                    </span>
-                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                                        {new Date(spot.spottedAt).toLocaleDateString()}
-                                    </span>
-                                    <span className={`admin-role-badge`} style={{
-                                        background: spot.car.rarity >= 70 ? 'var(--accent-gold)' :
-                                            spot.car.rarity >= 50 ? 'var(--accent-purple)' :
-                                                spot.car.rarity >= 35 ? 'var(--accent-blue)' : 'var(--bg-tertiary)',
-                                        color: spot.car.rarity >= 35 ? '#000' : 'var(--text-secondary)',
-                                    }}>
-                                        ⭐ {spot.car.rarity}
-                                    </span>
-                                </div>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                                {new Date(spot.spottedAt).toLocaleDateString()}
+                                            </span>
+                                            <span style={{
+                                                padding: '3px 10px',
+                                                borderRadius: '12px',
+                                                fontSize: '0.75rem',
+                                                fontWeight: 700,
+                                                background: spot.car.rarity >= 70 ? 'var(--accent-gold)' :
+                                                    spot.car.rarity >= 50 ? 'var(--accent-purple)' :
+                                                        spot.car.rarity >= 35 ? 'var(--accent-blue)' : 'var(--bg-secondary)',
+                                                color: spot.car.rarity >= 35 ? '#000' : 'var(--text-secondary)',
+                                            }}>
+                                                ⭐ {spot.car.rarity}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </a>
                             ))}
-                        {allSpots.length === 0 && (
-                            <div className="admin-empty">No spots yet</div>
-                        )}
                     </div>
+                    {allSpots.length === 0 && (
+                        <div className="admin-empty">No spots yet</div>
+                    )}
                 </div>
             )}
 
