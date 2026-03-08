@@ -1,0 +1,47 @@
+{
+    "name": "CarCues — Spot Rare Cars",
+    "short_name": "CarCues",
+    "description": "AI-powered car spotting platform. Photograph exotic cars, identify them with Gemini AI, build your collection, and compete on the leaderboard.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0f0f1a",
+    "theme_color": "#0ea5e9",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/favicon-16x16.png",
+            "sizes": "16x16",
+            "type": "image/png"
+        },
+        {
+            "src": "/favicon-32x32.png",
+            "sizes": "32x32",
+            "type": "image/png"
+        },
+        {
+            "src": "/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ],
+    "categories": [
+        "auto",
+        "lifestyle",
+        "social"
+    ],
+    "screenshots": [],
+    "prefer_related_applications": false
+}
