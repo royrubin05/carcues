@@ -9,7 +9,6 @@ import Dashboard from './pages/Dashboard';
 import UploadPage from './pages/UploadPage';
 import CollectionPage from './pages/CollectionPage';
 // import MapPage from './pages/MapPage'; // Temporarily disabled
-import WishlistPage from './pages/WishlistPage';
 import LeaderboardPage from './pages/LeaderboardPage';
 import AdminPage from './pages/AdminPage';
 import HowItWorksPage from './pages/HowItWorksPage';
@@ -45,7 +44,6 @@ export default function App() {
                         <Route path="/upload" element={<UploadPage />} />
                         <Route path="/collection" element={<CollectionPage />} />
                         {/* <Route path="/map" element={<MapPage />} /> */}
-                        <Route path="/wishlist" element={<WishlistPage />} />
                         <Route path="/leaderboard" element={<LeaderboardPage />} />
                         <Route path="/how-it-works" element={<HowItWorksPage />} />
                         <Route path="/profile" element={<ProfilePage />} />

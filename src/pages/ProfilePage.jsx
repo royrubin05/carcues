@@ -56,9 +56,6 @@ export default function ProfilePage() {
 
                 <div style={{ height: '8px' }} />
 
-                <Link to="/wishlist" className="btn btn-ghost" style={{ textAlign: 'center', padding: '14px', borderRadius: '12px', fontSize: '0.95rem', border: '1px solid var(--border)' }}>
-                    ⭐ Wishlist
-                </Link>
                 <Link to="/how-it-works" className="btn btn-ghost" style={{ textAlign: 'center', padding: '14px', borderRadius: '12px', fontSize: '0.95rem', border: '1px solid var(--border)' }}>
                     📖 How It Works
                 </Link>

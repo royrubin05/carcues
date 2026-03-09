@@ -118,11 +118,6 @@
     box-shadow: 0 0 20px rgba(0, 230, 118, 0.2);
 }
 
-.action-wishlist:hover {
-    border-color: var(--accent-gold);
-    box-shadow: var(--shadow-glow-gold);
-}
-
 .action-showcase:hover {
     border-color: var(--accent-purple, #a855f7);
     box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);

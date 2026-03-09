@@ -30,7 +30,7 @@ export default function AdminPage() {
     const [users, setUsers] = useState([]);
     const [allSpots, setAllSpots] = useState([]);
     const [spotSearch, setSpotSearch] = useState('');
-    const [platformStats, setPlatformStats] = useState({ totalUsers: 0, totalSpots: 0, totalWishlist: 0, totalPoints: 0 });
+    const [platformStats, setPlatformStats] = useState({ totalUsers: 0, totalSpots: 0, totalPoints: 0 });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -146,7 +146,7 @@ export default function AdminPage() {
             <div className="stats-grid">
                 <StatsCard icon="👥" label="Total Users" value={platformStats.totalUsers} color="var(--accent-blue)" delay={0} />
                 <StatsCard icon="📸" label="Total Spots" value={platformStats.totalSpots} color="var(--accent-green)" delay={1} />
-                <StatsCard icon="⭐" label="Total Wishlist Items" value={platformStats.totalWishlist} color="var(--accent-orange)" delay={2} />
+
                 <StatsCard icon="🏆" label="Total Rarity Points" value={platformStats.totalPoints} color="var(--accent-gold)" delay={3} />
                 <StatsCard icon="💰" label="Platform Value" value={(() => {
                     const total = allSpots.reduce((sum, s) => sum + (getEstimatedMSRP(s.car.make, s.car.model) || 0), 0);

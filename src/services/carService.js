@@ -37,28 +37,6 @@ export async function removeSpot(userId, spotId) {
     await api(`/api/spots/${spotId}`, { method: 'DELETE' });
 }
 
-// ──── Wishlist ────
-export async function getUserWishlist(userId) {
-    const data = await api('/api/wishlist');
-    return data.wishlist;
-}
-
-export async function addToWishlist(userId, car) {
-    await api('/api/wishlist', {
-        method: 'POST',
-        body: JSON.stringify({ car }),
-    });
-}
-
-export async function removeFromWishlist(userId, carId) {
-    await api(`/api/wishlist/${carId}`, { method: 'DELETE' });
-}
-
-export async function isOnWishlist(userId, carId) {
-    const wishlist = await getUserWishlist(userId);
-    return wishlist.some(c => c.id === carId);
-}
-
 // ──── AI Car Analysis (Gemini API + Mock Fallback) ────
 export async function analyzeCarPhoto(imageFile) {
     try {

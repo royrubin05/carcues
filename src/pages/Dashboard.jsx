@@ -116,14 +116,6 @@ export default function Dashboard() {
                     </div>
                     <span className="action-arrow">→</span>
                 </Link>
-                <Link to="/wishlist" className="action-card action-wishlist" id="quick-wishlist">
-                    <span className="action-icon">⭐</span>
-                    <div>
-                        <h3>Wishlist</h3>
-                        <p>{stats.wishlistCount} cars on your list</p>
-                    </div>
-                    <span className="action-arrow">→</span>
-                </Link>
             </div>
 
             {/* Rarest Find */}

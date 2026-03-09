@@ -453,45 +453,6 @@ function formatSpot(row) {
 }
 
 // ══════════════════════════════════════════════
-// WISHLIST ROUTES
-// ══════════════════════════════════════════════
-
-app.get('/api/wishlist', requireAuth, async (req, res) => {
-    try {
-        const items = await sql`
-            SELECT * FROM wishlist WHERE user_id = ${req.user.user_id} ORDER BY added_at DESC
-        `;
-        res.json({ wishlist: items.map(w => ({ id: w.id, ...w.car_data, addedAt: w.added_at })) });
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to fetch wishlist' });
-    }
-});
-
-app.post('/api/wishlist', requireAuth, async (req, res) => {
-    try {
-        const { car } = req.body;
-        const [item] = await sql`
-            INSERT INTO wishlist (user_id, car_data)
-            VALUES (${req.user.user_id}, ${JSON.stringify(car)})
-            ON CONFLICT (user_id, car_data) DO NOTHING
-            RETURNING *
-        `;
-        res.json({ success: true, item });
-    } catch (err) {
-        console.error('Add wishlist error:', err);
-        res.status(500).json({ error: 'Failed to add to wishlist' });
-    }
-});
-
-app.delete('/api/wishlist/:id', requireAuth, async (req, res) => {
-    try {
-        await sql`DELETE FROM wishlist WHERE id = ${req.params.id} AND user_id = ${req.user.user_id}`;
-        res.json({ success: true });
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to remove from wishlist' });
-    }
-});
-
 // ══════════════════════════════════════════════
 // STATS ROUTE
 // ══════════════════════════════════════════════
@@ -499,7 +460,6 @@ app.delete('/api/wishlist/:id', requireAuth, async (req, res) => {
 app.get('/api/stats', requireAuth, async (req, res) => {
     try {
         const spots = await sql`SELECT * FROM spots WHERE user_id = ${req.user.user_id}`;
-        const wishlist = await sql`SELECT * FROM wishlist WHERE user_id = ${req.user.user_id}`;
 
         const totalRarityPoints = spots.reduce((sum, s) => sum + (s.car_rarity || 0), 0);
         const uniqueMakes = new Set(spots.map(s => s.car_make).filter(Boolean));
@@ -514,7 +474,6 @@ app.get('/api/stats', requireAuth, async (req, res) => {
             averageRarity: spots.length > 0 ? (totalRarityPoints / spots.length).toFixed(1) : 0,
             level: Math.floor(totalRarityPoints / 200) + 1,
             xpProgress: ((totalRarityPoints % 200) / 200) * 100,
-            wishlistCount: wishlist.length,
             rarestFind: rarestSpot ? formatSpot(rarestSpot) : null,
         });
     } catch (err) {
@@ -640,13 +599,11 @@ app.get('/api/admin/stats', requireAuth, requireAdmin, async (req, res) => {
     try {
         const [userCount] = await sql`SELECT COUNT(*) as count FROM users`;
         const [spotCount] = await sql`SELECT COUNT(*) as count FROM spots`;
-        const [wishlistCount] = await sql`SELECT COUNT(*) as count FROM wishlist`;
         const [raritySum] = await sql`SELECT COALESCE(SUM(car_rarity), 0) as total FROM spots`;
 
         res.json({
             totalUsers: parseInt(userCount.count),
             totalSpots: parseInt(spotCount.count),
-            totalWishlist: parseInt(wishlistCount.count),
             totalPoints: Math.round(parseFloat(raritySum.total)),
         });
     } catch (err) {
