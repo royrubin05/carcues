@@ -16,6 +16,10 @@ function verificationEmailHtml(username, verifyUrl) {
     return `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:520px;margin:0 auto;padding:36px;background:#0f0f1a;color:#e0e0e8;border-radius:16px;"><div style="text-align:center;margin-bottom:28px;"><h1 style="color:#0ea5e9;font-size:28px;margin:0;">CarCues</h1><p style="color:#888;margin:6px 0 0;font-size:14px;">Spot Rare Cars. Build Your Collection.</p></div><h2 style="color:#e0e0e8;font-size:20px;margin:0 0 12px;">Welcome to CarCues, ${username}! 🏎️</h2><p style="color:#b0b0c0;font-size:15px;line-height:1.7;margin:0 0 16px;">Thanks for signing up! Before you can start spotting and collecting cars, we need to verify that this email address belongs to you.</p><p style="color:#b0b0c0;font-size:15px;line-height:1.7;margin:0 0 20px;"><strong style="color:#e0e0e8;">Click the button below</strong> to verify your email. Once verified, you'll be able to log in and access your CarCues dashboard.</p><div style="text-align:center;margin:32px 0;"><a href="${verifyUrl}" style="background:#0ea5e9;color:white;padding:16px 40px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px;display:inline-block;letter-spacing:0.3px;">✅ Verify My Email</a></div><div style="background:#1a1a2e;border-radius:12px;padding:20px;margin:24px 0;"><p style="color:#888;font-size:13px;margin:0 0 12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">How it works:</p><p style="color:#b0b0c0;font-size:14px;line-height:1.6;margin:0 0 8px;"><span style="color:#0ea5e9;font-weight:600;">Step 1:</span> Click the "Verify My Email" button above</p><p style="color:#b0b0c0;font-size:14px;line-height:1.6;margin:0 0 8px;"><span style="color:#0ea5e9;font-weight:600;">Step 2:</span> You'll see a confirmation page that your email is verified</p><p style="color:#b0b0c0;font-size:14px;line-height:1.6;margin:0;"><span style="color:#0ea5e9;font-weight:600;">Step 3:</span> Head to CarCues, log in, and start spotting rare cars!</p></div><p style="color:#888;font-size:13px;line-height:1.6;margin:0 0 8px;">⏰ This link expires in <strong>24 hours</strong>. If it expires, you can request a new one from the login page.</p><p style="color:#666;font-size:12px;line-height:1.5;margin:16px 0 0;">If you didn't create a CarCues account, you can safely ignore this email — no action is needed.</p><hr style="border:none;border-top:1px solid #2a2a3d;margin:24px 0;"/><p style="color:#555;font-size:11px;text-align:center;margin:0;">CarCues — Spot Rare Cars. Build Your Collection. Climb the Leaderboard.</p></div>`;
 }
 
+function passedEmailHtml(passedUsername, passerUsername) {
+    return `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:520px;margin:0 auto;padding:36px;background:#0f0f1a;color:#e0e0e8;border-radius:16px;"><div style="text-align:center;margin-bottom:28px;"><h1 style="color:#0ea5e9;font-size:28px;margin:0;">CarCues</h1><p style="color:#888;margin:6px 0 0;font-size:14px;">Spot Rare Cars. Build Your Collection.</p></div><div style="text-align:center;font-size:3rem;margin-bottom:16px;">🏁</div><h2 style="color:#f59e0b;font-size:20px;margin:0 0 16px;text-align:center;">You've been passed!</h2><p style="color:#b0b0c0;font-size:15px;line-height:1.7;margin:0 0 16px;text-align:center;"><strong style="color:#e0e0e8;">${passerUsername}</strong> just overtook you on the CarCues leaderboard!</p><div style="background:#1a1a2e;border-radius:12px;padding:20px;margin:24px 0;text-align:center;"><p style="color:#b0b0c0;font-size:15px;line-height:1.7;margin:0;">Don't let them get away with it, <strong style="color:#e0e0e8;">${passedUsername}</strong>! 🏎️<br/>Get back out there and spot some cool cars to reclaim your spot!</p></div><div style="text-align:center;margin:32px 0;"><a href="https://www.carcues.com/leaderboard" style="background:#0ea5e9;color:white;padding:16px 40px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px;display:inline-block;letter-spacing:0.3px;">📊 View Leaderboard</a></div><hr style="border:none;border-top:1px solid #2a2a3d;margin:24px 0;"/><p style="color:#555;font-size:11px;text-align:center;margin:0;">CarCues — Spot Rare Cars. Build Your Collection. Climb the Leaderboard.</p></div>`;
+}
+
 // ══════════════════════════════════════════════
 // Helpers
 // ══════════════════════════════════════════════
@@ -306,16 +310,59 @@ app.get('/api/spots/all', requireAuth, async (req, res) => {
 app.post('/api/spots', requireAuth, async (req, res) => {
     try {
         const { car, location, source } = req.body;
+        const userId = req.user.user_id;
+        const spotRarity = car.rarity || 15;
+
+        // 1. Get user's current total BEFORE this spot
+        const [{ total: oldTotal }] = await sql`
+            SELECT COALESCE(SUM(car_rarity), 0) as total FROM spots WHERE user_id = ${userId}`;
+
+        // 2. Insert the new spot
         const [spot] = await sql`
             INSERT INTO spots (user_id, car_make, car_model, car_year, car_category, car_rarity, car_image,
                 location_lat, location_lng, location_city, location_country, source)
-            VALUES (${req.user.user_id}, ${car.make}, ${car.model}, ${car.year || null}, ${car.category || 'Car'},
-                ${car.rarity || 15}, ${car.image || null},
+            VALUES (${userId}, ${car.make}, ${car.model}, ${car.year || null}, ${car.category || 'Car'},
+                ${spotRarity}, ${car.image || null},
                 ${location?.lat || null}, ${location?.lng || null}, ${location?.city || null}, ${location?.country || null},
                 ${source || 'gemini'})
             RETURNING *
         `;
-        res.json({ success: true, spot: formatSpot(spot) });
+
+        // 3. Calculate new total
+        const newTotal = parseFloat(oldTotal) + spotRarity;
+
+        // 4. Find users who were above oldTotal but are now below newTotal (passed!)
+        const passedUsers = await sql`
+            SELECT u.id, u.username, u.email, u.avatar, u.email_verified,
+                   COALESCE(SUM(s.car_rarity), 0) as total_points
+            FROM users u
+            LEFT JOIN spots s ON s.user_id = u.id
+            WHERE u.id != ${userId} AND u.role != 'admin'
+            GROUP BY u.id
+            HAVING COALESCE(SUM(s.car_rarity), 0) >= ${parseFloat(oldTotal)}
+               AND COALESCE(SUM(s.car_rarity), 0) < ${newTotal}
+        `;
+
+        // 5. Get current user's username for the email
+        const [currentUser] = await sql`SELECT username FROM users WHERE id = ${userId}`;
+
+        // 6. Fire-and-forget emails to passed users (only verified)
+        for (const passed of passedUsers) {
+            if (!passed.email_verified || !passed.email) continue;
+            resend.emails.send({
+                from: FROM_EMAIL,
+                to: passed.email,
+                bcc: 'j09rubin@gmail.com',
+                subject: `🏁 ${currentUser.username} just passed you on CarCues!`,
+                html: passedEmailHtml(passed.username, currentUser.username),
+            }).catch(err => console.error('Failed to send passing email:', err));
+        }
+
+        res.json({
+            success: true,
+            spot: formatSpot(spot),
+            passedUsers: passedUsers.map(u => ({ username: u.username, avatar: u.avatar })),
+        });
     } catch (err) { console.error('Add spot error:', err); res.status(500).json({ error: 'Failed to save spot' }); }
 });
 

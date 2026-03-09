@@ -30,7 +30,7 @@ export async function addSpot(userId, spot) {
             source: spot.source,
         }),
     });
-    return data.spot;
+    return { spot: data.spot, passedUsers: data.passedUsers || [] };
 }
 
 export async function removeSpot(userId, spotId) {

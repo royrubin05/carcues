@@ -376,16 +376,41 @@ app.get('/api/spots/all', requireAuth, async (req, res) => {
 app.post('/api/spots', requireAuth, async (req, res) => {
     try {
         const { car, location, source } = req.body;
+        const userId = req.user.user_id;
+        const spotRarity = car.rarity || 15;
+
+        // 1. Get user's current total BEFORE this spot
+        const [{ total: oldTotal }] = await sql`
+            SELECT COALESCE(SUM(car_rarity), 0) as total FROM spots WHERE user_id = ${userId}`;
+
+        // 2. Insert the new spot
         const [spot] = await sql`
             INSERT INTO spots (user_id, car_make, car_model, car_year, car_category, car_rarity, car_image,
                 location_lat, location_lng, location_city, location_country, source)
-            VALUES (${req.user.user_id}, ${car.make}, ${car.model}, ${car.year || null}, ${car.category || 'Car'},
-                ${car.rarity || 15}, ${car.image || null},
+            VALUES (${userId}, ${car.make}, ${car.model}, ${car.year || null}, ${car.category || 'Car'},
+                ${spotRarity}, ${car.image || null},
                 ${location?.lat || null}, ${location?.lng || null}, ${location?.city || null}, ${location?.country || null},
                 ${source || 'gemini'})
             RETURNING *
         `;
-        res.json({ success: true, spot: formatSpot(spot) });
+
+        // 3. Calculate new total and find passed users
+        const newTotal = parseFloat(oldTotal) + spotRarity;
+        const passedUsers = await sql`
+            SELECT u.id, u.username, u.avatar
+            FROM users u
+            LEFT JOIN spots s ON s.user_id = u.id
+            WHERE u.id != ${userId} AND u.role != 'admin'
+            GROUP BY u.id
+            HAVING COALESCE(SUM(s.car_rarity), 0) >= ${parseFloat(oldTotal)}
+               AND COALESCE(SUM(s.car_rarity), 0) < ${newTotal}
+        `;
+
+        res.json({
+            success: true,
+            spot: formatSpot(spot),
+            passedUsers: passedUsers.map(u => ({ username: u.username, avatar: u.avatar })),
+        });
     } catch (err) {
         console.error('Add spot error:', err);
         res.status(500).json({ error: 'Failed to save spot' });

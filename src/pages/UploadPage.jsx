@@ -26,6 +26,7 @@ export default function UploadPage() {
     const [scanProgress, setScanProgress] = useState(0);
     const [result, setResult] = useState(null);
     const [saved, setSaved] = useState(false);
+    const [passedUsers, setPassedUsers] = useState([]);
     const [error, setError] = useState(null);
     const [photoLocation, setPhotoLocation] = useState(null);
     const [manualLocation, setManualLocation] = useState('');
@@ -246,7 +247,12 @@ export default function UploadPage() {
         };
 
         try {
-            await addSpot(user.id, spot);
+            const saveResult = await addSpot(user.id, spot);
+
+            // Track passed users for celebration
+            if (saveResult.passedUsers && saveResult.passedUsers.length > 0) {
+                setPassedUsers(saveResult.passedUsers);
+            }
 
             // Log AI audit entry
             const aiPrediction = {
@@ -289,6 +295,7 @@ export default function UploadPage() {
         setImagePreview(null);
         setResult(null);
         setSaved(false);
+        setPassedUsers([]);
         setAnalyzing(false);
         setScanProgress(0);
         setError(null);
@@ -803,8 +810,37 @@ export default function UploadPage() {
                         💾 Save to Collection
                     </button>
                 ) : (
-                    <div className="saved-message">
-                        ✅ Saved to your collection!
+                    <div>
+                        <div className="saved-message">
+                            ✅ Saved to your collection!
+                        </div>
+                        {passedUsers.length > 0 && (
+                            <div style={{
+                                marginTop: '12px',
+                                padding: '16px 20px',
+                                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(239, 68, 68, 0.08))',
+                                border: '1px solid rgba(245, 158, 11, 0.25)',
+                                borderRadius: '12px',
+                                animation: 'fadeInUp 0.4s ease-out',
+                            }}>
+                                <div style={{ fontSize: '1.3rem', marginBottom: '8px', textAlign: 'center' }}>🔥🏁</div>
+                                <p style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.95rem', margin: '0 0 6px', textAlign: 'center' }}>
+                                    You just moved up the leaderboard!
+                                </p>
+                                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: '0 0 10px', textAlign: 'center', lineHeight: 1.5 }}>
+                                    You passed {passedUsers.map((u, i) => (
+                                        <span key={u.username}>
+                                            {i > 0 && (i === passedUsers.length - 1 ? ' and ' : ', ')}
+                                            <strong style={{ color: 'var(--accent-gold, #f59e0b)' }}>{u.avatar} {u.username}</strong>
+                                        </span>
+                                    ))}
+                                </p>
+                                <a href="/leaderboard" style={{
+                                    display: 'block', textAlign: 'center', color: 'var(--accent-blue)',
+                                    fontSize: '0.85rem', textDecoration: 'none', fontWeight: 600,
+                                }}>📊 View Leaderboard →</a>
+                            </div>
+                        )}
                     </div>
                 )}
                 <button className="btn btn-ghost" onClick={handleReset}>
