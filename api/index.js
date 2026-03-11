@@ -492,6 +492,13 @@ app.get('/api/admin/spots', requireAuth, requireAdmin, async (req, res) => {
     } catch (err) { res.status(500).json({ error: 'Failed to fetch spots' }); }
 });
 
+app.delete('/api/admin/spots/:id', requireAuth, requireAdmin, async (req, res) => {
+    try {
+        await sql`DELETE FROM spots WHERE id = ${req.params.id}`;
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: 'Failed to delete spot' }); }
+});
+
 // ══════════════════════════════════════════════
 // PUBLIC ROUTES (no auth — for sharing)
 // ══════════════════════════════════════════════

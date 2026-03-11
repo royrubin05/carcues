@@ -120,6 +120,20 @@ export default function AdminPage() {
         }
     };
 
+    const handleDeleteSpot = async (spotId, carName) => {
+        if (!window.confirm(`Delete "${carName}"? This cannot be undone.`)) return;
+        try {
+            const data = await api(`/api/admin/spots/${spotId}`, { method: 'DELETE' });
+            if (data.success) {
+                setAllSpots(prev => prev.filter(s => s.id !== spotId));
+                setResetMsg(`Spot "${carName}" deleted`);
+                setTimeout(() => setResetMsg(''), 3000);
+            }
+        } catch (err) {
+            setResetMsg(err.message || 'Failed to delete spot');
+        }
+    };
+
     if (!isAdmin) {
         return <Navigate to="/" replace />;
     }
@@ -449,18 +463,37 @@ export default function AdminPage() {
                                             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                                                 {new Date(spot.spottedAt).toLocaleDateString()}
                                             </span>
-                                            <span style={{
-                                                padding: '3px 10px',
-                                                borderRadius: '12px',
-                                                fontSize: '0.75rem',
-                                                fontWeight: 700,
-                                                background: spot.car.rarity >= 70 ? 'var(--accent-gold)' :
-                                                    spot.car.rarity >= 50 ? 'var(--accent-purple)' :
-                                                        spot.car.rarity >= 35 ? 'var(--accent-blue)' : 'var(--bg-secondary)',
-                                                color: spot.car.rarity >= 35 ? '#000' : 'var(--text-secondary)',
-                                            }}>
-                                                ⭐ {spot.car.rarity}
-                                            </span>
+                                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                                <button
+                                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDeleteSpot(spot.id, `${spot.car.make} ${spot.car.model}`); }}
+                                                    style={{
+                                                        background: 'rgba(239, 68, 68, 0.15)',
+                                                        border: '1px solid rgba(239, 68, 68, 0.3)',
+                                                        color: '#ef4444',
+                                                        borderRadius: '8px',
+                                                        padding: '4px 10px',
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: 600,
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.2s',
+                                                    }}
+                                                    onMouseEnter={e => { e.target.style.background = 'rgba(239, 68, 68, 0.3)'; }}
+                                                    onMouseLeave={e => { e.target.style.background = 'rgba(239, 68, 68, 0.15)'; }}
+                                                    title="Delete this spot"
+                                                >
+                                                    🗑️
+                                                </button>
+                                                <span style={{
+                                                    padding: '3px 10px',
+                                                    borderRadius: '12px',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: 700,
+                                                    background: spot.car.rarity >= 70 ? 'var(--accent-gold)' :
+                                                        spot.car.rarity >= 50 ? 'var(--accent-purple)' :
+                                                            spot.car.rarity >= 35 ? 'var(--accent-blue)' : 'var(--bg-secondary)',
+                                                    color: spot.car.rarity >= 35 ? '#000' : 'var(--text-secondary)',
+                                                }}>⭐ {spot.car.rarity}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </a>
